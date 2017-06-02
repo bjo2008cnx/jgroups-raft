@@ -1,8 +1,7 @@
 jgroups-raft
 ============
 
-Implementation of the RAFT [1] consensus algorithm in JGroups. For the
-design, look into `doc`.
+Implementation of the RAFT [1] consensus algorithm in JGroups. For the design, look into `doc`.
 
 To generate the manual execute `ant manual` (requires `asciidoctor`).
 
