@@ -135,7 +135,7 @@ public class VoteTest {
 
     protected JChannel create(String name) throws Exception {
         RAFT raft = new RAFT().members(mbrs).raftId(name).stateMachine(new DummyStateMachine())
-                .logClass("org.jgroups.protocols.raft.InMemoryLog").logName(name + "-" + CLUSTER);
+                .logClass("org.jgroups.protocols.raft.log.InMemoryLog").logName(name + "-" + CLUSTER);
         JChannel ch = new JChannel(Util.getTestStack(new ELECTION(), raft, new REDIRECT())).name(name);
         ch.connect(CLUSTER);
         return ch;

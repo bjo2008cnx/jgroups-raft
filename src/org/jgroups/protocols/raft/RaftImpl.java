@@ -3,6 +3,8 @@ package org.jgroups.protocols.raft;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.Message;
+import org.jgroups.protocols.raft.log.Log;
+import org.jgroups.protocols.raft.log.LogEntry;
 
 /**
  * Base class for the different roles a RAFT node can have (follower, candidate, leader)
@@ -56,9 +58,9 @@ public abstract class RaftImpl {
             return new AppendResult(false, raft.lastAppended());
 
         // if the term at prev_log_index != prev_term -> return false and the start index of the conflicting term
-        if(prev_log_index == 0 || prev.term == prev_log_term) {
+        if(prev_log_index == 0 || prev.term() == prev_log_term) {
             LogEntry existing=raft.log_impl.get(curr_index);
-            if(existing != null && existing.term != entry_term) {
+            if(existing != null && existing.term() != entry_term) {
                 // delete this and all subsequent entries and overwrite with received entry
                 raft.deleteAllLogEntriesStartingFrom(curr_index);
             }
@@ -67,7 +69,7 @@ public abstract class RaftImpl {
                 raft.executeInternalCommand(null, data, offset, length);
             return new AppendResult(true, curr_index).commitIndex(raft.commitIndex());
         }
-        return new AppendResult(false, getFirstIndexOfConflictingTerm(prev_log_index, prev.term), prev.term);
+        return new AppendResult(false, getFirstIndexOfConflictingTerm(prev_log_index, prev.term()), prev.term());
     }
 
 
@@ -87,7 +89,7 @@ public abstract class RaftImpl {
         int retval=Math.min(start_index, last);
         for(int i=retval; i >= first; i--) {
             LogEntry entry=log.get(i);
-            if(entry == null || entry.term != conflicting_term)
+            if(entry == null || entry.term() != conflicting_term)
                 break;
             retval=i;
         }

@@ -7,6 +7,7 @@ import org.jgroups.annotations.MBean;
 import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
 import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.protocols.raft.log.LogEntry;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.MessageBatch;
 import org.jgroups.util.TimeScheduler;
@@ -244,7 +245,7 @@ public class ELECTION extends Protocol {
     protected boolean sameOrNewer(int last_log_term, int last_log_index) {
         int my_last_log_index;
         LogEntry entry=raft.log().get(my_last_log_index=raft.log().lastAppended());
-        int my_last_log_term=entry != null? entry.term : 0;
+        int my_last_log_term=entry != null? entry.term() : 0;
         int comp=Integer.compare(my_last_log_term, last_log_term);
         return comp <= 0 && (comp < 0 || Integer.compare(my_last_log_index, last_log_index) <= 0);
     }

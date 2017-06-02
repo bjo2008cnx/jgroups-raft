@@ -1,6 +1,6 @@
 
 
-The persistent log (org.jgroups.protocols.raft.Log)
+The persistent log (org.jgroups.protocols.raft.log.Log)
 ===================================================
 Author: Bela Ban
 

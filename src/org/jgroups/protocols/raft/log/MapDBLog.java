@@ -1,4 +1,4 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.log;
 
 import org.jgroups.Address;
 import org.jgroups.util.Streamable;
@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.function.ObjIntConsumer;
 
 /**
- * Implementation of {@link org.jgroups.protocols.raft.Log} with MapDB (http://www.mapdb.org)
+ * Implementation of {@link Log} with MapDB (http://www.mapdb.org)
  * @author Bela Ban
  * @since  0.1
  */

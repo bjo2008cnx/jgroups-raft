@@ -4,6 +4,8 @@
  import org.jgroups.Global;
  import org.jgroups.JChannel;
  import org.jgroups.protocols.raft.*;
+ import org.jgroups.protocols.raft.log.Log;
+ import org.jgroups.protocols.raft.log.LogEntry;
  import org.jgroups.util.Util;
  import org.testng.annotations.AfterMethod;
  import org.testng.annotations.BeforeMethod;
@@ -73,7 +75,7 @@
      protected JChannel create(String name) throws Exception {
          ELECTION election=new ELECTION().noElections(true);
          RAFT raft=new RAFT().members(members).raftId(name)
-           .logClass("org.jgroups.protocols.raft.InMemoryLog").logName(name + "-" + CLUSTER);
+           .logClass("org.jgroups.protocols.raft.log.InMemoryLog").logName(name + "-" + CLUSTER);
          REDIRECT client=new REDIRECT();
          return new JChannel(Util.getTestStack(election, raft, client)).name(name);
      }

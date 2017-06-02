@@ -1,4 +1,4 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.log;
 
 import org.apache.commons.io.FileUtils;
 import org.iq80.leveldb.*;

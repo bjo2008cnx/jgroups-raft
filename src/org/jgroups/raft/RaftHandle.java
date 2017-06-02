@@ -3,6 +3,8 @@ package org.jgroups.raft;
 import org.jgroups.Address;
 import org.jgroups.Channel;
 import org.jgroups.protocols.raft.*;
+import org.jgroups.protocols.raft.log.Log;
+import org.jgroups.protocols.raft.log.LogEntry;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +57,7 @@ public class RaftHandle implements Settable {
     public int          lastApplied()                                {return raft.lastAppended();}
     public int          commitIndex()                                {return raft.commitIndex();}
     public void         snapshot() throws Exception                  {raft.snapshot();}
-    public Log          log()                                        {return raft.log();}
+    public Log log()                                        {return raft.log();}
     public int          logSize()                                    {return raft.logSize();}
     public int          logSizeInBytes()                             {return raft.logSizeInBytes();}
 

@@ -4,7 +4,9 @@
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.protocols.raft.*;
-import org.jgroups.raft.blocks.ReplicatedStateMachine;
+ import org.jgroups.protocols.raft.log.Log;
+ import org.jgroups.protocols.raft.log.LogEntry;
+ import org.jgroups.raft.blocks.ReplicatedStateMachine;
 import org.jgroups.util.Util;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
@@ -502,7 +504,7 @@ public class AppendEntriesTest {
     protected JChannel create(String name, boolean follower) throws Exception {
         ELECTION election=new ELECTION().noElections(follower);
         RAFT raft=new RAFT().members(members).raftId(name)
-          .logClass("org.jgroups.protocols.raft.InMemoryLog").logName(name + "-" + CLUSTER);
+          .logClass("org.jgroups.protocols.raft.log.InMemoryLog").logName(name + "-" + CLUSTER);
         return new JChannel(Util.getTestStack(election, raft, new REDIRECT())).name(name);
     }
 

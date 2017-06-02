@@ -1,4 +1,4 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.log;
 
 import org.jgroups.Address;
 
@@ -51,7 +51,7 @@ public interface Log {
     int firstAppended();
 
     /** Returns the index of the last append operation (May get removed as this should be in-memory)<p/>
-     * This value is set by {@link #append(int,boolean,LogEntry...)} */
+     * This value is set by {@link #append(int,boolean, LogEntry...)} */
     int lastAppended();
 
     /**

@@ -4,6 +4,8 @@ import org.jgroups.*;
 import org.jgroups.annotations.*;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.pbcast.GMS;
+import org.jgroups.protocols.raft.log.Log;
+import org.jgroups.protocols.raft.log.LogEntry;
 import org.jgroups.raft.util.CommitTable;
 import org.jgroups.raft.util.RequestTable;
 import org.jgroups.stack.Protocol;
@@ -67,7 +69,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
 
 
     @Property(description = "The fully qualified name of the class implementing Log")
-    protected String log_class = "org.jgroups.protocols.raft.LevelDBLog";
+    protected String log_class = "org.jgroups.protocols.raft.log.LevelDBLog";
 
     @Property(description = "Arguments to the log impl, e.g. k1=v1,k2=v2. These will be passed to init()")
     protected String log_args;
@@ -481,11 +483,11 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
                         log.error("%s: log entry for index %d not found in log", local_addr, i);
                         break;
                     }
-                    if (log_entry.command != null) {
-                        if (log_entry.internal)
-                            executeInternalCommand(null, log_entry.command, log_entry.offset, log_entry.length);
+                    if (log_entry.command() != null) {
+                        if (log_entry.internal())
+                            executeInternalCommand(null, log_entry.command(), log_entry.offset(), log_entry.length());
                         else {
-                            state_machine.apply(log_entry.command, log_entry.offset, log_entry.length);
+                            state_machine.apply(log_entry.command(), log_entry.offset(), log_entry.length());
                             count++;
                         }
                     }
@@ -678,7 +680,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
             curr_term = current_term;
             commit_idx = commit_index;
             LogEntry entry = log_impl.get(prev_index);
-            prev_term = entry != null ? entry.term : 0;
+            prev_term = entry != null ? entry.term() : 0;
 
             log_impl.append(curr_index, true, new LogEntry(curr_term, buf, offset, length, cmd != null));
 
@@ -797,9 +799,9 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
             return;
         }
         LogEntry prev = log_impl.get(index - 1);
-        int prev_term = prev != null ? prev.term : 0;
-        Message msg = new Message(target).setBuffer(entry.command, entry.offset, entry.length)
-                .putHeader(id, new AppendEntriesRequest(current_term, this.local_addr, index - 1, prev_term, entry.term, commit_index, entry.internal));
+        int prev_term = prev != null ? prev.term() : 0;
+        Message msg = new Message(target).setBuffer(entry.command(), entry.offset(), entry.length())
+                .putHeader(id, new AppendEntriesRequest(current_term, this.local_addr, index - 1, prev_term, entry.term(), commit_index, entry.internal()));
         down_prot.down(new Event(Event.MSG, msg));
     }
 
@@ -829,7 +831,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
             snapshotting = true;
 
             LogEntry last_committed_entry = log_impl.get(commitIndex());
-            int last_index = commit_index, last_term = last_committed_entry.term;
+            int last_index = commit_index, last_term = last_committed_entry.term();
             doSnapshot();
 
             // todo: use streaming approach (STATE$StateOutputStream, BlockingInputStream from JGroups)
@@ -930,18 +932,18 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
         if (state_machine == null)
             throw new IllegalStateException(local_addr + ": state machine is null");
         byte[] rsp = null;
-        if (log_entry.internal) {
+        if (log_entry.internal()) {
             InternalCommand cmd;
             try {
-                cmd = (InternalCommand) Util.streamableFromByteBuffer(InternalCommand.class, log_entry.command,
-                        log_entry.offset, log_entry.length);
+                cmd = (InternalCommand) Util.streamableFromByteBuffer(InternalCommand.class, log_entry.command(),
+                        log_entry.offset(), log_entry.length());
                 if (cmd.type() == InternalCommand.Type.addServer || cmd.type() == InternalCommand.Type.removeServer)
                     members_being_changed.set(false); // new addServer()/removeServer() operations can now be started
             } catch (Throwable t) {
                 log.error("%s: failed unmarshalling internal command: %s", local_addr, t);
             }
         } else
-            rsp = state_machine.apply(log_entry.command, log_entry.offset, log_entry.length);
+            rsp = state_machine.apply(log_entry.command(), log_entry.offset(), log_entry.length());
 
         // Notify the client's CompletableFuture and then remove the entry in the client request table
         if (request_table != null) {

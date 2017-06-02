@@ -2,10 +2,10 @@ package org.jgroups.tests;
 
 import org.jgroups.Address;
 import org.jgroups.Global;
-import org.jgroups.protocols.raft.InMemoryLog;
-import org.jgroups.protocols.raft.LevelDBLog;
-import org.jgroups.protocols.raft.Log;
-import org.jgroups.protocols.raft.LogEntry;
+import org.jgroups.protocols.raft.log.InMemoryLog;
+import org.jgroups.protocols.raft.log.LevelDBLog;
+import org.jgroups.protocols.raft.log.Log;
+import org.jgroups.protocols.raft.log.LogEntry;
 import org.jgroups.util.Util;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.testng.Assert.*;
 
 /**
- * Tests all {@link org.jgroups.protocols.raft.Log} implementations for correctness
+ * Tests all {@link Log} implementations for correctness
  * @author Bela Ban
  * @since  0.1
  */
