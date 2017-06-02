@@ -256,13 +256,13 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
         return commit_index;
     }
 
-    public Log log() {
-        return log_impl;
-    }
-
     public RAFT log(Log new_log) {
         this.log_impl = new_log;
         return this;
+    }
+
+    public Log log() {
+        return log_impl;
     }
 
     public RAFT addRoleListener(RoleChange c) {
@@ -570,6 +570,11 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
     }
 
 
+    /**
+     *
+     * @param evt
+     * @return
+     */
     public Object down(Event evt) {
         switch (evt.getType()) {
             case Event.SET_LOCAL_ADDRESS:

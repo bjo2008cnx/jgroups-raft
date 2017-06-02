@@ -17,3 +17,11 @@ There's an IRC at #jgroups-raft.
 
 [3] http://belaban.github.io/jgroups-raft
 
+示例演示：
+
+启动CounterServiceDemo(参数-name A)
+启动CounterServiceDemo(参数-name B)
+启动CounterServiceDemo(参数-name C)
+
+在Console中可以看到A或B成为Leader
+停掉A，可以看到B或C成为Leader

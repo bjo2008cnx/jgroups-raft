@@ -29,13 +29,13 @@ public class ElectionsTest {
     protected JChannel a, b, c;
     protected static final String CLUSTER = "ElectionsTest";
     protected static final List<String> members = Arrays.asList("A", "B", "C");
-    protected static final Method startElectionTimer;
+    protected static final Method startElectionTimerMethod;
     protected static final byte[] BUF = {};
 
     static {
         try {
-            startElectionTimer = ELECTION.class.getDeclaredMethod("startElectionTimer");
-            startElectionTimer.setAccessible(true);
+            startElectionTimerMethod = ELECTION.class.getDeclaredMethod("startElectionTimer");
+            startElectionTimerMethod.setAccessible(true);
         } catch (NoSuchMethodException ex) {
             throw new RuntimeException(ex);
         }
@@ -68,6 +68,7 @@ public class ElectionsTest {
 
 
     /**
+     * B & C 有更长的Log，BC 中的一个能成为
      * B and C have longer logs than A: one of {B,C} must become coordinator, but *not* A
      */
     public void testElectionWithLongLog() throws Exception {
@@ -114,11 +115,17 @@ public class ElectionsTest {
         }
     }
 
+    /**
+     * 开始选举
+     *
+     * @param channels
+     * @throws Exception
+     */
     protected void startElections(JChannel... channels) throws Exception {
         for (JChannel ch : channels) {
             ELECTION election = (ELECTION) ch.getProtocolStack().findProtocol(ELECTION.class);
             election.noElections(false);
-            startElectionTimer.invoke(election);
+            startElectionTimerMethod.invoke(election);
         }
     }
 
@@ -137,9 +144,9 @@ public class ElectionsTest {
     }
 
     /**
-     * If expected is null, then any member can be a leader
+     * If expectedAddress is null, then any member can be a leader
      */
-    protected Address assertLeader(int times, long sleep, Address expected, JChannel... channels) {
+    protected Address assertLeader(int times, long sleep, Address expectedAddress, JChannel... channels) {
         // wait until there is 1 leader
         for (int i = 0; i < times; i++) {
             List<Address> leaders = leaders(channels);
@@ -148,8 +155,8 @@ public class ElectionsTest {
                 assert size <= 1;
                 Address leader = leaders.get(0);
                 System.out.println("leader: " + leader);
-                if (expected != null)
-                    assert expected.equals(leader);
+                if (expectedAddress != null)
+                    assert expectedAddress.equals(leader);
                 break;
             }
 
