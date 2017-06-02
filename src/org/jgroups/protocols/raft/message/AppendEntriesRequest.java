@@ -1,8 +1,7 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.message;
 
 import org.jgroups.Address;
 import org.jgroups.Global;
-import org.jgroups.protocols.raft.RaftHeader;
 import org.jgroups.util.Bits;
 import org.jgroups.util.Util;
 

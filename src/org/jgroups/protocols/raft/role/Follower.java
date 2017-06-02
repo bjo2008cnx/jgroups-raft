@@ -6,6 +6,8 @@ import org.jgroups.Message;
 import org.jgroups.protocols.raft.*;
 import org.jgroups.protocols.raft.log.Log;
 import org.jgroups.protocols.raft.log.LogEntry;
+import org.jgroups.protocols.raft.message.AppendEntriesResponse;
+import org.jgroups.protocols.raft.message.AppendResult;
 import org.jgroups.util.ByteArrayDataInputStream;
 import org.jgroups.util.Util;
 

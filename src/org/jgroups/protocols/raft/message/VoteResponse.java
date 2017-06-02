@@ -1,4 +1,4 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.message;
 
 import java.io.DataInput;
 import java.io.DataOutput;

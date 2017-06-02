@@ -1,4 +1,4 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.message;
 
 import org.jgroups.Address;
 import org.jgroups.util.Util;

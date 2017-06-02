@@ -1,4 +1,4 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.message;
 
 import org.jgroups.Global;
 import org.jgroups.util.Bits;

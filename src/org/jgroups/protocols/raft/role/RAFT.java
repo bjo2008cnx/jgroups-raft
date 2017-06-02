@@ -7,6 +7,7 @@ import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.protocols.raft.*;
 import org.jgroups.protocols.raft.log.Log;
 import org.jgroups.protocols.raft.log.LogEntry;
+import org.jgroups.protocols.raft.message.*;
 import org.jgroups.raft.util.CommitTable;
 import org.jgroups.raft.util.RequestTable;
 import org.jgroups.stack.Protocol;

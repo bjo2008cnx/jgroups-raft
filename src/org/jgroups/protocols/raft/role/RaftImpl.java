@@ -3,8 +3,8 @@ package org.jgroups.protocols.raft.role;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.Message;
-import org.jgroups.protocols.raft.AppendEntriesResponse;
-import org.jgroups.protocols.raft.AppendResult;
+import org.jgroups.protocols.raft.message.AppendEntriesResponse;
+import org.jgroups.protocols.raft.message.AppendResult;
 import org.jgroups.protocols.raft.log.Log;
 import org.jgroups.protocols.raft.log.LogEntry;
 
