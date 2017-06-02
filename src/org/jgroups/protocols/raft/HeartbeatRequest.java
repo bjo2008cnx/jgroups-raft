@@ -7,16 +7,22 @@ import java.io.DataInput;
 import java.io.DataOutput;
 
 /**
- * Used by {@link org.jgroups.protocols.raft.ELECTION} to send heartbeats. Contrary to the RAFT paper, heartbeats are
- * not emulated with AppendEntriesRequests
+ * 用于{@link org.jgroups.protocols.raft.ELECTION} 的心跳
+ * Contrary to the RAFT paper, heartbeats are not emulated with AppendEntriesRequests
+ *
  * @author Bela Ban
- * @since  0.1
+ * @since 0.1
  */
 public class HeartbeatRequest extends RaftHeader {
     protected Address leader;
 
-    public HeartbeatRequest() {}
-    public HeartbeatRequest(int term, Address leader) {super(term); this.leader=leader;}
+    public HeartbeatRequest() {
+    }
+
+    public HeartbeatRequest(int term, Address leader) {
+        super(term);
+        this.leader = leader;
+    }
 
     public int size() {
         return super.size() + Util.size(leader);
@@ -29,7 +35,7 @@ public class HeartbeatRequest extends RaftHeader {
 
     public void readFrom(DataInput in) throws Exception {
         super.readFrom(in);
-        leader=Util.readAddress(in);
+        leader = Util.readAddress(in);
     }
 
     public String toString() {

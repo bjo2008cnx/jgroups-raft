@@ -15,8 +15,7 @@ import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 
 /**
- * Protocol listening on a socket for client requests. Dispatches them to the leader (via {@link REDIRECT}) and sends
- * back the response. Requests and responses are always sent as
+ * 监听客户端请求. 转发请求给Leader并返回响应给客户端.请求与响应的格式：
  * <pre>
  *     | RequestType (byte) | length (int) | byte[] buffer |
  * </pre>
@@ -181,8 +180,9 @@ public class CLIENT extends Protocol implements Runnable {
                         send(output, RequestType.rsp, rsp_buffer, 0, rsp_buffer.length);
                         return;
                     }
-                    if(buf == null)
-                        buf=BUF;
+                    if(buf == null) {
+                        buf = BUF;
+                    }
                     send(output, RequestType.rsp, buf, 0, buf.length);
                 }
                 catch(Throwable t) {

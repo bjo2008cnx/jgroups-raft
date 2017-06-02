@@ -1,9 +1,10 @@
 package org.jgroups.protocols.raft;
 
 /**
- * Implements the behavior of a RAFT candidate
+ * 候选者
+ *
  * @author Bela Ban
- * @since  0.1
+ * @since 0.1
  */
 public class Candidate extends RaftImpl {
     public Candidate(RAFT raft) {

@@ -7,7 +7,7 @@ import org.jgroups.util.ByteArrayDataInputStream;
 import org.jgroups.util.Util;
 
 /**
- * Implements the behavior of a RAFT follower
+ * RAFT follower
  * @author Bela Ban
  * @since  0.1
  */

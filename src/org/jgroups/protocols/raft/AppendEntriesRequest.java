@@ -9,7 +9,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 
 /**
- * Used to send AppendEntries messages to cluster members. The log entries are contained in actual payload of the message,
+ * 用来给集群发给AppendEntries 消息
+ *  The log entries are contained in actual payload of the message,
  * not in this header.
  * @author Bela Ban
  * @since  0.1

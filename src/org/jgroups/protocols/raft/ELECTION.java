@@ -16,7 +16,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Performs leader election. Starts an election timer on connect and starts an election when the timer goes off and
+ * 选举
+ * Starts an election timer on connect and starts an election when the timer goes off and
  * no heartbeats have been received. Runs a heartbeat task when leader.
  * @author Bela Ban
  * @since  0.1

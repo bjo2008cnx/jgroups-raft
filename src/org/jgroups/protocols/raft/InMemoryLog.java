@@ -7,8 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.ObjIntConsumer;
 
 /**
- * In-memory log implementation without any persistence. Used only by unit tests. Note that synchronization is
- * half-baked.
+ * 内存Log，仅用于测试
+ * Note that synchronization is half-baked.
  * @author Bela Ban
  * @since  0.2
  */

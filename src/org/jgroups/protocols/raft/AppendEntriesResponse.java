@@ -7,6 +7,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 
 /**
+ * 用来给集群发给AppendEntries 响应消息
  * @author Bela Ban
  * @since  0.1
  */

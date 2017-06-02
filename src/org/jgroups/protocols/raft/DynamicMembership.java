@@ -3,7 +3,7 @@ package org.jgroups.protocols.raft;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Defines the contract to add and remove servers (RAFT.members).
+ * 增删成员的接口 (RAFT.members).
  * @author Bela Ban
  * @since  0.2
  */

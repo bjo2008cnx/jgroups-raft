@@ -6,7 +6,7 @@ import org.jgroups.raft.util.RequestTable;
 import org.jgroups.util.Util;
 
 /**
- * Implements the behavior of a RAFT leader
+ * Leader
  * @author Bela Ban
  * @since  0.1
  */
