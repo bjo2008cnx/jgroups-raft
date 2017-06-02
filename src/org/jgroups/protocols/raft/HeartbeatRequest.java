@@ -7,14 +7,14 @@ import java.io.DataInput;
 import java.io.DataOutput;
 
 /**
- * 用于{@link org.jgroups.protocols.raft.ELECTION} 的心跳
+ * 用于 ELECTION 的心跳
  * Contrary to the RAFT paper, heartbeats are not emulated with AppendEntriesRequests
  *
  * @author Bela Ban
  * @since 0.1
  */
 public class HeartbeatRequest extends RaftHeader {
-    protected Address leader;
+    public Address leader;
 
     public HeartbeatRequest() {
     }

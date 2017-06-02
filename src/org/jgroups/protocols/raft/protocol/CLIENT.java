@@ -1,9 +1,12 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.protocol;
 
 import org.jgroups.Global;
 import org.jgroups.annotations.MBean;
 import org.jgroups.annotations.Property;
 import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.protocols.raft.DynamicMembership;
+import org.jgroups.protocols.raft.Settable;
+import org.jgroups.protocols.raft.role.RAFT;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Util;
 
@@ -33,8 +36,6 @@ public class CLIENT extends Protocol implements Runnable {
         ClassConfigurator.addProtocol(CLIENT_ID, CLIENT.class);
     }
 
-
-
     @Property(description="Port to listen for client requests",writable=false,exposeAsManagedAttribute=true)
     protected int               port=1965;
 
@@ -55,7 +56,7 @@ public class CLIENT extends Protocol implements Runnable {
 
 
 
-    protected Settable          settable;
+    protected Settable settable;
     protected DynamicMembership dyn_membership;
     protected ServerSocket      sock;
     protected ExecutorService   thread_pool; // to handle requests
@@ -65,7 +66,7 @@ public class CLIENT extends Protocol implements Runnable {
 
     public void init() throws Exception {
         super.init();
-        if((settable=RAFT.findProtocol(Settable.class, this, true)) == null)
+        if((settable= RAFT.findProtocol(Settable.class, this, true)) == null)
             throw new IllegalStateException("did not find a protocol implementing Settable (e.g. REDIRECT or RAFT)");
         if((dyn_membership=RAFT.findProtocol(DynamicMembership.class, this, true)) == null)
             throw new IllegalStateException("did not find a protocol implementing DynamicMembership (e.g. REDIRECT or RAFT)");

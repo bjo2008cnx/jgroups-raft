@@ -1,6 +1,10 @@
 package org.jgroups.tests;
 
 import org.jgroups.Global;
+import org.jgroups.protocols.raft.AppendEntriesRequest;
+import org.jgroups.protocols.raft.AppendEntriesResponse;
+import org.jgroups.protocols.raft.AppendResult;
+import org.jgroups.protocols.raft.protocol.REDIRECT;
 import org.jgroups.protocols.raft.*;
 import org.jgroups.util.ByteArrayDataOutputStream;
 import org.jgroups.util.Util;

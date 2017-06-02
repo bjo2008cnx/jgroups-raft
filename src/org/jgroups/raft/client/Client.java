@@ -1,6 +1,6 @@
 package org.jgroups.raft.client;
 
-import org.jgroups.protocols.raft.CLIENT;
+import org.jgroups.protocols.raft.protocol.CLIENT;
 import org.jgroups.util.Util;
 
 import java.io.DataInputStream;
@@ -9,7 +9,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 /**
- * Client which accesses the {@link org.jgroups.protocols.raft.CLIENT} protocol through a socket. Currently used to
+ * Client which accesses the {@link CLIENT} protocol through a socket. Currently used to
  * submit addServer and remove Server commands
  * @author Bela Ban
  * @since  0.2

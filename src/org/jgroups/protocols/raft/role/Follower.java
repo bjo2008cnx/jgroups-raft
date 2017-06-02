@@ -1,8 +1,9 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.role;
 
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.Message;
+import org.jgroups.protocols.raft.*;
 import org.jgroups.protocols.raft.log.Log;
 import org.jgroups.protocols.raft.log.LogEntry;
 import org.jgroups.util.ByteArrayDataInputStream;

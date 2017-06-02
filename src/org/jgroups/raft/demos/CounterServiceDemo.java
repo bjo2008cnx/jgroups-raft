@@ -5,8 +5,8 @@ import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.blocks.atomic.Counter;
 import org.jgroups.raft.blocks.CounterService;
-import org.jgroups.protocols.raft.ELECTION;
-import org.jgroups.protocols.raft.RAFT;
+import org.jgroups.protocols.raft.protocol.ELECTION;
+import org.jgroups.protocols.raft.role.RAFT;
 import org.jgroups.util.Util;
 
 /**

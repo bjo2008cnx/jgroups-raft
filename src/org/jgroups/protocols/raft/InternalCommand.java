@@ -1,5 +1,6 @@
 package org.jgroups.protocols.raft;
 
+import org.jgroups.protocols.raft.role.RAFT;
 import org.jgroups.util.Bits;
 import org.jgroups.util.Streamable;
 

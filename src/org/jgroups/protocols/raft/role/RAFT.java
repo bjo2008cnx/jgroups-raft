@@ -1,9 +1,10 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.role;
 
 import org.jgroups.*;
 import org.jgroups.annotations.*;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.pbcast.GMS;
+import org.jgroups.protocols.raft.*;
 import org.jgroups.protocols.raft.log.Log;
 import org.jgroups.protocols.raft.log.LogEntry;
 import org.jgroups.raft.util.CommitTable;
@@ -35,7 +36,7 @@ import java.util.function.ObjIntConsumer;
 @MBean(description = "Implementation of the RAFT consensus protocol")
 public class RAFT extends Protocol implements Runnable, Settable, DynamicMembership {
     // When moving to JGroups -> add to jg-protocol-ids.xml
-    protected static final byte[] raft_id_key = Util.stringToBytes("raft-id");
+    public static final byte[] raft_id_key = Util.stringToBytes("raft-id");
     protected static final short RAFT_ID = 521;
 
     // When moving to JGroups -> add to jg-magic-map.xml
@@ -373,14 +374,14 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
         return ++current_term;
     }
 
-    protected synchronized void createRequestTable() {
+    public synchronized void createRequestTable() {
         request_table = new RequestTable<>();
         // Populate with non-committed entries (from log) (https://github.com/belaban/jgroups-raft/issues/31)
         for (int i = this.commit_index + 1; i <= this.last_appended; i++)
             request_table.create(i, raft_id, null);
     }
 
-    protected void createCommitTable() {
+    public void createCommitTable() {
         List<Address> mbrs = new ArrayList<>(view.getMembers());
         mbrs.remove(local_addr);
         commit_table = new CommitTable(mbrs, last_appended + 1);
@@ -406,7 +407,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
         return changeMembers(name, InternalCommand.Type.removeServer);
     }
 
-    protected CompletableFuture<byte[]> changeMembers(String name, InternalCommand.Type type) throws Exception {
+    public CompletableFuture<byte[]> changeMembers(String name, InternalCommand.Type type) throws Exception {
         if (!dynamic_view_changes)
             throw new Exception("dynamic view changes are not allowed; set dynamic_view_changes to true to enable it");
         if (leader == null || (local_addr != null && !leader.equals(local_addr)))
@@ -421,7 +422,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
         }
     }
 
-    void _addServer(String name) {
+    public void _addServer(String name) {
         if (name == null) return;
         synchronized (members) {
             if (!members.contains(name)) {
@@ -431,7 +432,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
         }
     }
 
-    void _removeServer(String name) {
+    public void _removeServer(String name) {
         if (name == null) return;
         synchronized (members) {
             if (members.remove(name))
@@ -708,7 +709,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
         // if hdr.term < current_term -> drop message
         // if hdr.term > current_term -> set current_term and become Follower, accept message
         // if hdr.term == current_term -> accept message
-        if (currentTerm(hdr.term) < 0)
+        if (currentTerm(hdr.term()) < 0)
             return;
 
         if (hdr instanceof AppendEntriesRequest) {
@@ -970,7 +971,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
             log.error("view contains duplicate raft-ids: %s", view);
     }
 
-    protected void changeRole(Role new_role) {
+    public void changeRole(Role new_role) {
         RaftImpl new_impl = new_role == Role.Follower ? new Follower(this) : new_role == Role.Candidate ? new Candidate(this) : new Leader(this);
         RaftImpl old_impl = impl;
         if (old_impl == null || !old_impl.getClass().equals(new_impl.getClass())) {

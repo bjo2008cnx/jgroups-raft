@@ -1,4 +1,4 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.protocol;
 
 import org.jgroups.Address;
 import org.jgroups.Event;
@@ -8,6 +8,7 @@ import org.jgroups.annotations.MBean;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.pbcast.GMS;
 import org.jgroups.protocols.pbcast.JoinRsp;
+import org.jgroups.protocols.raft.role.RAFT;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.Buffer;
 import org.jgroups.util.ExtendedUUID;

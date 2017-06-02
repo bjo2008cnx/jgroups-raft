@@ -1,4 +1,4 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.protocol;
 
 import org.jgroups.Address;
 import org.jgroups.Event;
@@ -7,7 +7,13 @@ import org.jgroups.annotations.MBean;
 import org.jgroups.annotations.ManagedAttribute;
 import org.jgroups.annotations.Property;
 import org.jgroups.conf.ClassConfigurator;
+import org.jgroups.protocols.raft.HeartbeatRequest;
+import org.jgroups.protocols.raft.RaftHeader;
+import org.jgroups.protocols.raft.VoteRequest;
+import org.jgroups.protocols.raft.VoteResponse;
 import org.jgroups.protocols.raft.log.LogEntry;
+import org.jgroups.protocols.raft.role.RAFT;
+import org.jgroups.protocols.raft.role.Role;
 import org.jgroups.stack.Protocol;
 import org.jgroups.util.MessageBatch;
 import org.jgroups.util.TimeScheduler;
@@ -68,12 +74,12 @@ public class ELECTION extends Protocol {
      * candidate and starts a new election */
     protected volatile boolean  heartbeat_received=true;
 
-    protected RAFT              raft; // direct ref instead of events
+    protected RAFT raft; // direct ref instead of events
     protected Address           local_addr;
     protected TimeScheduler     timer;
     protected Future<?>         election_task;
     protected Future<?>         heartbeat_task;
-    protected Role              role=Role.Follower;
+    protected Role role=Role.Follower;
 
     public long     heartbeatInterval()            {return heartbeat_interval;}
     public ELECTION heartbeatInterval(long val)    {heartbeat_interval=val; return this;}
@@ -157,7 +163,7 @@ public class ELECTION extends Protocol {
     protected void handleEvent(Message msg, RaftHeader hdr) {
         // drop the message if hdr.term < raft.current_term, else accept
         // if hdr.term > raft.current_term -> change to follower
-        int rc=raft.currentTerm(hdr.term);
+        int rc=raft.currentTerm(hdr.term());
         if(rc < 0)
             return;
         if(rc > 0) { // a new term was set
@@ -213,11 +219,11 @@ public class ELECTION extends Protocol {
     }
 
     protected synchronized void handleVoteResponse(int term) {
-        if(role == Role.Candidate && term == raft.current_term) {
-            if(++current_votes >= raft.majority) {
+        if(role == Role.Candidate && term == raft.currentTerm()) {
+            if(++current_votes >= raft.majority()) {
                 // we've got the majority: become leader
                 log.trace("%s: collected %d votes (majority=%d) in term %d -> becoming leader",
-                          local_addr, current_votes, raft.majority, term);
+                          local_addr, current_votes, raft.majority(), term);
                 changeRole(Role.Leader);
             }
         }

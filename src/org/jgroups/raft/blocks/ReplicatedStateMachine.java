@@ -2,7 +2,7 @@ package org.jgroups.raft.blocks;
 
 import org.jgroups.JChannel;
 import org.jgroups.protocols.raft.InternalCommand;
-import org.jgroups.protocols.raft.RAFT;
+import org.jgroups.protocols.raft.role.RAFT;
 import org.jgroups.protocols.raft.StateMachine;
 import org.jgroups.raft.RaftHandle;
 import org.jgroups.util.Bits;

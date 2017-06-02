@@ -12,7 +12,7 @@ import java.io.DataOutput;
  * @since  0.1
  */
 public class AppendEntriesResponse extends RaftHeader {
-    protected AppendResult result;
+    public AppendResult result;
 
     public AppendEntriesResponse() {}
     public AppendEntriesResponse(int term, AppendResult result) {super(term); this.result=result;}

@@ -1,8 +1,9 @@
-package org.jgroups.protocols.raft;
+package org.jgroups.protocols.raft.role;
 
 import org.jgroups.Address;
-import org.jgroups.util.ExtendedUUID;
+import org.jgroups.protocols.raft.AppendResult;
 import org.jgroups.raft.util.RequestTable;
+import org.jgroups.util.ExtendedUUID;
 import org.jgroups.util.Util;
 
 /**
@@ -39,13 +40,13 @@ public class Leader extends RaftImpl {
         ExtendedUUID uuid=(ExtendedUUID)sender;
         String sender_raft_id=Util.bytesToString(uuid.get(RAFT.raft_id_key));
         raft.getLog().trace("%s: received AppendEntries response from %s for term %d: %s", raft.local_addr, sender, term, result);
-        if(result.success) {
-            raft.commit_table.update(sender, result.getIndex(), result.getIndex()+1, result.commit_index, false);
-            if(reqtab.add(result.index, sender_raft_id, raft.majority()))
-                raft.handleCommit(result.index);
+        if(result.success()) {
+            raft.commit_table.update(sender, result.getIndex(), result.getIndex()+1, result.commitIndex(), false);
+            if(reqtab.add(result.index(), sender_raft_id, raft.majority()))
+                raft.handleCommit(result.index());
         }
         else
-            raft.commit_table.update(sender, 0, result.getIndex(), result.commit_index, true);
+            raft.commit_table.update(sender, 0, result.getIndex(), result.commitIndex(), true);
     }
 
 }

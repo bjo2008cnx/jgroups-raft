@@ -5,9 +5,9 @@ import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.raft.blocks.ReplicatedStateMachine;
 import org.jgroups.jmx.JmxConfigurator;
-import org.jgroups.protocols.raft.ELECTION;
-import org.jgroups.protocols.raft.RAFT;
-import org.jgroups.protocols.raft.Role;
+import org.jgroups.protocols.raft.protocol.ELECTION;
+import org.jgroups.protocols.raft.role.RAFT;
+import org.jgroups.protocols.raft.role.Role;
 import org.jgroups.util.Util;
 
 /**

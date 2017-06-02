@@ -3,9 +3,11 @@
  import org.jgroups.Address;
  import org.jgroups.Global;
  import org.jgroups.JChannel;
- import org.jgroups.protocols.raft.*;
+ import org.jgroups.protocols.raft.protocol.ELECTION;
+ import org.jgroups.protocols.raft.protocol.REDIRECT;
  import org.jgroups.protocols.raft.log.Log;
  import org.jgroups.protocols.raft.log.LogEntry;
+ import org.jgroups.protocols.raft.role.RAFT;
  import org.jgroups.util.Util;
  import org.testng.annotations.AfterMethod;
  import org.testng.annotations.BeforeMethod;

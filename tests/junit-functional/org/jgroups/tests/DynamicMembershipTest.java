@@ -3,9 +3,9 @@ package org.jgroups.tests;
 import org.jgroups.Address;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
-import org.jgroups.protocols.raft.ELECTION;
-import org.jgroups.protocols.raft.RAFT;
-import org.jgroups.protocols.raft.REDIRECT;
+import org.jgroups.protocols.raft.protocol.ELECTION;
+import org.jgroups.protocols.raft.role.RAFT;
+import org.jgroups.protocols.raft.protocol.REDIRECT;
 import org.jgroups.protocols.raft.StateMachine;
 import org.jgroups.util.Util;
 import org.testng.annotations.AfterMethod;
@@ -54,7 +54,7 @@ public class DynamicMembershipTest {
         }
     }
 
-    /** Starts only 1 member: no leader. Calling {@link org.jgroups.protocols.raft.RAFT#addServer(String)} must throw an exception */
+    /** Starts only 1 member: no leader. Calling {@link RAFT#addServer(String)} must throw an exception */
     public void testMembershipChangeOnNonLeader() throws Exception {
         init("A");
         RAFT raft=raft(channels[0]);

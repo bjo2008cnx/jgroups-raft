@@ -5,6 +5,7 @@ import org.jgroups.Channel;
 import org.jgroups.protocols.raft.*;
 import org.jgroups.protocols.raft.log.Log;
 import org.jgroups.protocols.raft.log.LogEntry;
+import org.jgroups.protocols.raft.role.RAFT;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +13,7 @@ import java.util.function.ObjIntConsumer;
 
 /**
  * Main interaction point for applications with jgroups-raft. Provides methods to make changes, register a state machine,
- * get commit-index and last-applied, register {@link org.jgroups.protocols.raft.RAFT.RoleChange} listeners etc<p/>
+ * get commit-index and last-applied, register {@link RAFT.RoleChange} listeners etc<p/>
  * Sample use:
  * <pre>
  *     JChannel ch=createChannel();
