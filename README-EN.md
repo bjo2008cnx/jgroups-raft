@@ -1,19 +1,4 @@
-重构jgroups-raft，具有更好的代码可读性
-
-##示例演示：
-
-启动CounterServiceDemo(参数-name A)
-
-启动CounterServiceDemo(参数-name B)
-
-启动CounterServiceDemo(参数-name C)
-
-在Console中可以看到A或B成为Leader
-
-停掉A，可以看到B或C成为Leader
-
-
-jgroups-raft
+Refactored jgroups-raft for better understanding. 
 ============
 
 Implementation of the RAFT [1] consensus algorithm in JGroups. For the design, look into `doc`.
