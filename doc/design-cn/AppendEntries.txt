@@ -5,14 +5,12 @@ Handling of AppendEntries messages
 State
 -----
 - The leader maintains
-    - last_appended: index of the last entry added to the log (see Log.txt)
-    - commit-index: index of the highest committed entry
+         - last_appended：添加到日志的最后一个条目的索引（请参阅Log.txt）
+     - commit-index：最高承诺条目的索引
 - The leader maintains (for each member P)
-    - next-index: the index of the next entry to be sent to P (initialized to last_appended +1)
-    - match-index: the index of the highest entry known to be replicated to P (initialized to 0)
-    - commit-index: the index of the highest entry known to be committed by P. This is only needed because - contrary
-                    to the RAFT paper - AppendEntries requests are only sent until P.next_index > last_appended, and not
-                    continually (also acting as heartbeats). Initialized to 0.
+         - next-index：要发送到P的下一个条目的索引（初始化为last_appended +1）
+     - match-index：已知要复制到P的最高条目的索引（初始化为0）
+     - commit-index：已知由P提交的最高条目的索引。这只是需要的，因为 - 与RAFT文件相反 - AppendEntries请求只发送到P.next_index> last_appended，而不是持续（也作为心跳）。 初始化为0。
 
 
 Adding an entry at the leader
