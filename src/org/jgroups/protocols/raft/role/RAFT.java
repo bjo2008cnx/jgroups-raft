@@ -290,8 +290,8 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
         return commit_index;
     }
 
-    public RAFT log(Log new_log) {
-        this.logImpl = new_log;
+    public RAFT log(Log newLog) {
+        this.logImpl = newLog;
         return this;
     }
 
@@ -999,8 +999,8 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
         if (check_view && duplicatesInView(view)) log.error("view contains duplicate raft-ids: %s", view);
     }
 
-    public void changeRole(Role new_role) {
-        RaftImpl new_impl = new_role == Role.Follower ? new Follower(this) : new_role == Role.Candidate ? new Candidate(this) : new Leader(this);
+    public void changeRole(Role newRole) {
+        RaftImpl new_impl = newRole == Role.Follower ? new Follower(this) : newRole == Role.Candidate ? new Candidate(this) : new Leader(this);
         RaftImpl old_impl = impl;
         if (old_impl == null || !old_impl.getClass().equals(new_impl.getClass())) {
             if (old_impl != null) old_impl.destroy();
@@ -1010,7 +1010,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
             }
             log.trace("%s: changed role from %s -> %s", local_addr, old_impl == null ? "null" : old_impl.getClass().getSimpleName(), new_impl.getClass()
                     .getSimpleName());
-            notifyRoleChangeListeners(new_role);
+            notifyRoleChangeListeners(newRole);
         }
     }
 

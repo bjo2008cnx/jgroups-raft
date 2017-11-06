@@ -132,8 +132,8 @@ public class LevelDBLog implements Log {
     }
 
     @Override
-    public Log commitIndex(int new_index) {
-        commitIndex = new_index;
+    public Log commitIndex(int newIndex) {
+        commitIndex = newIndex;
         log.trace("Updating commit index: %d", commitIndex);
         db.put(COMMITINDEX, fromIntToByteArray(commitIndex));
         return this;
@@ -168,7 +168,6 @@ public class LevelDBLog implements Log {
         catch(Exception ex) {
             ex.printStackTrace(); // todo: better error handling
         }
-
     }
 
     @Override
