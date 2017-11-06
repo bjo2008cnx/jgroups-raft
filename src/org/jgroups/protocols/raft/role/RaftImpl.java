@@ -53,7 +53,7 @@ public abstract class RaftImpl {
             return null;
         }
 
-        LogEntry prev=raft.log_impl.get(prev_log_index);
+        LogEntry prev=raft.logImpl.get(prev_log_index);
         int curr_index=prev_log_index+1;
 
         if(prev == null && prev_log_index > 0) // didn't find entry
@@ -61,7 +61,7 @@ public abstract class RaftImpl {
 
         // if the term at prev_log_index != prev_term -> return false and the start index of the conflicting term
         if(prev_log_index == 0 || prev.term() == prev_log_term) {
-            LogEntry existing=raft.log_impl.get(curr_index);
+            LogEntry existing=raft.logImpl.get(curr_index);
             if(existing != null && existing.term() != entry_term) {
                 // delete this and all subsequent entries and overwrite with received entry
                 raft.deleteAllLogEntriesStartingFrom(curr_index);
@@ -86,7 +86,7 @@ public abstract class RaftImpl {
 
     /** Finds the first index at which conflicting_term starts, going back from start_index towards the head of the log */
     protected int getFirstIndexOfConflictingTerm(int start_index, int conflicting_term) {
-        Log log=raft.log_impl;
+        Log log=raft.logImpl;
         int first=Math.max(1, log.firstAppended()), last=log.lastAppended();
         int retval=Math.min(start_index, last);
         for(int i=retval; i >= first; i--) {

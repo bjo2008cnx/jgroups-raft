@@ -16,7 +16,6 @@ public class Leader extends RaftImpl {
         super(raft);
     }
 
-
     public void init() {
         super.init();
         raft.createRequestTable();
