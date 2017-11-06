@@ -4,22 +4,23 @@ import org.jgroups.JChannel;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.blocks.atomic.Counter;
-import org.jgroups.raft.blocks.CounterService;
 import org.jgroups.protocols.raft.protocol.ELECTION;
 import org.jgroups.protocols.raft.role.RAFT;
+import org.jgroups.raft.blocks.CounterService;
 import org.jgroups.util.Util;
 
 /**
- * Demo of CounterService. When integrating with JGroups, this class should be removed and the original demo in JGroups
- * should be modified to accept different CounterService implementations.
+ * Demo of CounterService.
+ * When integrating with JGroups, this class should be removed and the original demo in JGroups should be modified to accept different CounterService
+ * implementations.
  */
 public class CounterServiceDemo {
     protected JChannel ch;
-    protected CounterService counter_service;
+    protected CounterService counterService;
 
     void start(String props, String name, long repl_timeout, boolean allow_dirty_reads, boolean follower) throws Exception {
         ch = new JChannel(props).name(name);
-        counter_service = new CounterService(ch).raftId(name).replTimeout(repl_timeout).allowDirtyReads(allow_dirty_reads);
+        counterService = new CounterService(ch).raftId(name).replTimeout(repl_timeout).allowDirtyReads(allow_dirty_reads);
         if (follower) {
             disableElections(ch);
         }
@@ -39,16 +40,13 @@ public class CounterServiceDemo {
 
 
     protected void loop() throws Exception {
-        Counter counter = counter_service.getOrCreateCounter("counter", 1);
+        Counter counter = counterService.getOrCreateCounter("counter", 1);
         boolean looping = true;
         while (looping) {
             try {
-                int key = Util.keyPress("[1] Increment [2] Decrement [3] Compare and set [4] Dump log\n" +
-                        "[8] Snapshot [9] Increment N times [x] Exit\n" +
-                        "first-applied=" + firstApplied() +
-                        ", last-applied=" + counter_service.lastApplied() +
-                        ", commit-index=" + counter_service.commitIndex() +
-                        ", log size=" + Util.printBytes(logSize()) + "\n");
+                int key = Util.keyPress("[1] Increment [2] Decrement [3] Compare and set [4] Dump log\n" + "[8] Snapshot [9] Increment N times [x] Exit\n" +
+                        "first-applied=" + firstApplied() + ", last-applied=" + counterService.lastApplied() + ", commit-index=" + counterService.commitIndex
+                        () + ", log size=" + Util.printBytes(logSize()) + "\n");
 
                 switch (key) {
                     case '1':
@@ -65,15 +63,15 @@ public class CounterServiceDemo {
                         if (counter.compareAndSet(expect, update)) {
                             System.out.println("-- set counter \"" + counter.getName() + "\" to " + update + "\n");
                         } else {
-                            System.err.println("failed setting counter \"" + counter.getName() + "\" from " + expect +
-                                    " to " + update + ", current value is " + counter.get() + "\n");
+                            System.err.println("failed setting counter \"" + counter.getName() + "\" from " + expect + " to " + update + ", current value is " +
+                                    "" + "" + counter.get() + "\n");
                         }
                         break;
                     case '4':
                         dumpLog();
                         break;
                     case '8':
-                        counter_service.snapshot();
+                        counterService.snapshot();
                         break;
                     case '9':
                         int NUM = Util.readIntFromStdin("num: ");
@@ -83,8 +81,7 @@ public class CounterServiceDemo {
                         long start = System.currentTimeMillis();
                         for (int i = 0; i < NUM; i++) {
                             retval = counter.incrementAndGet();
-                            if (i > 0 && i % print == 0)
-                                System.out.println("-- count=" + retval);
+                            if (i > 0 && i % print == 0) System.out.println("-- count=" + retval);
                         }
                         long diff = System.currentTimeMillis() - start;
                         System.out.println("\n" + NUM + " incrs took " + diff + " ms; " + (NUM / (diff / 1000.0)) + " ops /sec\n");
@@ -104,7 +101,7 @@ public class CounterServiceDemo {
 
     protected void dumpLog() {
         System.out.println("\nindex (term): command\n---------------------");
-        counter_service.dumpLog();
+        counterService.dumpLog();
         System.out.println("");
     }
 
@@ -114,13 +111,12 @@ public class CounterServiceDemo {
     }
 
     protected int logSize() {
-        return counter_service.logSize();
+        return counterService.logSize();
     }
 
     protected static void disableElections(JChannel ch) {
         ELECTION election = (ELECTION) ch.getProtocolStack().findProtocol(ELECTION.class);
-        if (election != null)
-            election.noElections(true);
+        if (election != null) election.noElections(true);
     }
 
 
@@ -161,8 +157,7 @@ public class CounterServiceDemo {
     }
 
     private static void help() {
-        System.out.println("CounterServiceDemo [-props props] [-name name] " +
-                "[-repl_timeout timeout] [-follower] [-allow_dirty_reads true|false]");
+        System.out.println("CounterServiceDemo [-props props] [-name name] " + "[-repl_timeout timeout] [-follower] [-allow_dirty_reads true|false]");
     }
 
 
