@@ -18,6 +18,11 @@ import org.jgroups.util.Util;
 import java.util.Arrays;
 
 /**
+ * 拦截协调员的JOIN和MERGE请求，并拒绝那些会员，这些成员的加入会导致会员在视图中出现重复的raft_ID。
+ * 每个成员的地址必须是{@link org.jgroups.util.ExtendedUUID}并且有一个“raft-id”键，其值是raft-id。
+ * 当拦截一个发送者有一个已经在视图中的raft-id的JOIN请求时，我们发回一个{@link org.jgroups.protocols.pbcast.JoinRsp}
+ * 拒绝信息。\
+ * <p>
  * Intercepts JOIN and MERGE requests on the coordinator and rejects members whose addition would lead to members with duplicate raft-ids in the view.</p>
  * Every member's address must be an {@link org.jgroups.util.ExtendedUUID} and have a "raft-id" key whose value is the raft-id.
  * When intercepting a JOIN request whose sender has a raft-id that's already in the view, we send* back a {@link org.jgroups.protocols.pbcast.JoinRsp} with

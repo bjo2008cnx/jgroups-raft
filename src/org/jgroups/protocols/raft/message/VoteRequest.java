@@ -7,41 +7,48 @@ import java.io.DataOutput;
 
 /**
  * @author Bela Ban
- * @since  0.1
+ * @since 0.1
  */
 public class VoteRequest extends RaftHeader {
-    protected int last_log_term;
-    protected int last_log_index;
+    //protected int term; term定义在父类中
+    protected int lastLogTerm;
+    protected int lastLogIndex;
 
-
-    public VoteRequest() {}
-    public VoteRequest(int term, int last_log_term, int last_log_index) {
-        super(term);
-        this.last_log_term=last_log_term;
-        this.last_log_index=last_log_index;
+    public VoteRequest() {
     }
 
-    public int lastLogTerm()  {return last_log_term;}
-    public int lastLogIndex() {return last_log_index;}
+    public VoteRequest(int term, int lastLogTerm, int lastLogIndex) {
+        super(term);
+        this.lastLogTerm = lastLogTerm;
+        this.lastLogIndex = lastLogIndex;
+    }
+
+    public int lastLogTerm() {
+        return lastLogTerm;
+    }
+
+    public int lastLogIndex() {
+        return lastLogIndex;
+    }
 
 
     public int size() {
-        return super.size() + Bits.size(last_log_term) + Bits.size(last_log_index);
+        return super.size() + Bits.size(lastLogTerm) + Bits.size(lastLogIndex);
     }
 
     public void writeTo(DataOutput out) throws Exception {
         super.writeTo(out);
-        Bits.writeInt(last_log_term, out);
-        Bits.writeInt(last_log_index, out);
+        Bits.writeInt(lastLogTerm, out);
+        Bits.writeInt(lastLogIndex, out);
     }
 
     public void readFrom(DataInput in) throws Exception {
         super.readFrom(in);
-        last_log_term=Bits.readInt(in);
-        last_log_index=Bits.readInt(in);
+        lastLogTerm = Bits.readInt(in);
+        lastLogIndex = Bits.readInt(in);
     }
 
     public String toString() {
-        return super.toString() + ", last_log_term=" + last_log_term + ", last_log_index=" + last_log_index;
+        return super.toString() + ", lastLogTerm=" + lastLogTerm + ", lastLogIndex=" + lastLogIndex;
     }
 }

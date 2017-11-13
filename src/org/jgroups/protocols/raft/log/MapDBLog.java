@@ -23,7 +23,7 @@ public class MapDBLog implements Log {
     protected static final String        CURRENT_TERM  = "current_term";
     protected static final String        LAST_APPENDED = "last_appended";
     protected static final String        COMMIT_INDEX  = "commit_index";
-    protected static final String        VOTED_FOR     = "voted_for";
+    protected static final String        VOTED_FOR     = "votedFor";
     protected static final String        LOG_ENTRIES   = "log_entries";
 
     public MapDBLog() {

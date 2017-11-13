@@ -23,6 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 
 /**
+ * 将来自客户端的RAFT命令重定向到实际的RAFT领导者的协议。
+ * 例如: 如果客户端发出set（），但是当前模式不是领导者，set（）被重定向到领导者，客户端被阻塞，直到set（）已被大多数节点所承诺。
  * Protocol that redirects RAFT commands from clients to the actual RAFT leader. E.g. if a client issues a set(), but
  * the current mode is not the leader, the set() is redirected to the leader and the client blocked until the set()
  * has been committed by a majority of nodes.
@@ -73,8 +75,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
         Address leader = leader("set()");
 
         // we are the current leader: pass the call to the RAFT protocol
-        if (Objects.equals(local_addr, leader))
-            return raft.setAsync(buf, offset, length);
+        if (Objects.equals(local_addr, leader)) return raft.setAsync(buf, offset, length);
 
         // add a unique ID to the request table, so we can correlate the response to the request
         int req_id = request_ids.getAndIncrement();
@@ -85,8 +86,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
 
         // we're not the current leader -> redirect request to leader and wait for response or timeout
         log.trace("%s: redirecting request %d to leader %s", local_addr, req_id, leader);
-        Message redirect = new Message(leader, buf, offset, length)
-                .putHeader(id, new RedirectHeader(RequestType.SET_REQ, req_id, false));
+        Message redirect = new Message(leader, buf, offset, length).putHeader(id, new RedirectHeader(RequestType.SET_REQ, req_id, false));
         down_prot.down(new Event(Event.MSG, redirect));
         return future;
     }
@@ -105,8 +105,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
 
     public void init() throws Exception {
         super.init();
-        if ((raft = RAFT.findProtocol(RAFT.class, this, true)) == null)
-            throw new IllegalStateException("RAFT protocol not found");
+        if ((raft = RAFT.findProtocol(RAFT.class, this, true)) == null) throw new IllegalStateException("RAFT protocol not found");
     }
 
     public Object down(Event evt) {
@@ -123,8 +122,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
             case Event.MSG:
                 Message msg = (Message) evt.getArg();
                 RedirectHeader hdr = (RedirectHeader) msg.getHeader(id);
-                if (hdr == null)
-                    break;
+                if (hdr == null) break;
                 handleEvent(msg, hdr);
                 return null;
             case Event.VIEW_CHANGE:
@@ -144,8 +142,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
                 handleEvent(msg, hdr);
             }
         }
-        if (!batch.isEmpty())
-            up_prot.up(batch);
+        if (!batch.isEmpty()) up_prot.up(batch);
     }
 
 
@@ -156,8 +153,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
                 log.trace("%s: received redirected request %d from %s", local_addr, hdr.corr_id, sender);
                 ResponseHandler rsp_handler = new ResponseHandler(sender, hdr.corr_id);
                 try {
-                    raft.setAsync(msg.getRawBuffer(), msg.getOffset(), msg.getLength())
-                            .whenComplete(rsp_handler);
+                    raft.setAsync(msg.getRawBuffer(), msg.getOffset(), msg.getLength()).whenComplete(rsp_handler);
                 } catch (Throwable t) {
                     rsp_handler.apply(t);
                 }
@@ -167,8 +163,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
                 rsp_handler = new ResponseHandler(sender, hdr.corr_id);
                 InternalCommand.Type type = hdr.type == RequestType.ADD_SERVER ? InternalCommand.Type.addServer : InternalCommand.Type.removeServer;
                 try {
-                    raft.changeMembers(new String(msg.getRawBuffer(), msg.getOffset(), msg.getLength()), type)
-                            .whenComplete(rsp_handler);
+                    raft.changeMembers(new String(msg.getRawBuffer(), msg.getOffset(), msg.getLength()), type).whenComplete(rsp_handler);
                 } catch (Throwable t) {
                     rsp_handler.apply(t);
                 }
@@ -180,8 +175,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
                 }
                 if (future != null) {
                     log.trace("%s: received response for redirected request %d from %s", local_addr, hdr.corr_id, sender);
-                    if (!hdr.exception)
-                        future.complete(msg.getBuffer());
+                    if (!hdr.exception) future.complete(msg.getBuffer());
                     else {
                         try {
                             Throwable t = (Throwable) Util.objectFromByteBuffer(msg.getBuffer());
@@ -200,10 +194,8 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
 
     protected Address leader(String req_type) {
         Address leader = raft.leader();
-        if (leader == null)
-            throw new RuntimeException(String.format("there is currently no leader to forward %s request to", req_type));
-        if (view != null && !view.containsMember(leader))
-            throw new RuntimeException("leader " + leader + " is not member of view " + view);
+        if (leader == null) throw new RuntimeException(String.format("there is currently no leader to forward %s request to", req_type));
+        if (view != null && !view.containsMember(leader)) throw new RuntimeException("leader " + leader + " is not member of view " + view);
         return leader;
     }
 
@@ -211,8 +203,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
         Address leader = leader("addServer()/removeServer()");
 
         // we are the current leader: pass the call to the RAFT protocol
-        if (Objects.equals(local_addr, leader))
-            return raft.changeMembers(name, add ? InternalCommand.Type.addServer : InternalCommand.Type.removeServer);
+        if (Objects.equals(local_addr, leader)) return raft.changeMembers(name, add ? InternalCommand.Type.addServer : InternalCommand.Type.removeServer);
 
         // add a unique ID to the request table, so we can correlate the response to the request
         int req_id = request_ids.getAndIncrement();
@@ -224,8 +215,8 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
         // we're not the current leader -> redirect request to leader and wait for response or timeout
         log.trace("%s: redirecting request %d to leader %s", local_addr, req_id, leader);
         byte[] buffer = Util.stringToBytes(name);
-        Message redirect = new Message(leader, buffer)
-                .putHeader(id, new RedirectHeader(add ? RequestType.ADD_SERVER : RequestType.REMOVE_SERVER, req_id, false));
+        Message redirect = new Message(leader, buffer).putHeader(id, new RedirectHeader(add ? RequestType.ADD_SERVER : RequestType.REMOVE_SERVER, req_id,
+                false));
         down_prot.down(new Event(Event.MSG, redirect));
         return future;
     }
@@ -242,10 +233,8 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
 
         @Override
         public void accept(byte[] buf, Throwable ex) {
-            if (ex != null)
-                apply(ex);
-            else
-                apply(buf);
+            if (ex != null) apply(ex);
+            else apply(buf);
         }
 
         protected void apply(byte[] arg) {
@@ -297,8 +286,7 @@ public class REDIRECT extends Protocol implements Settable, DynamicMembership {
         }
 
         public String toString() {
-            return new StringBuilder(type.toString()).append(", corr_id=").append(corr_id)
-                    .append(", exception=").append(exception).toString();
+            return new StringBuilder(type.toString()).append(", corr_id=").append(corr_id).append(", exception=").append(exception).toString();
         }
     }
 }

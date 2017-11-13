@@ -48,7 +48,7 @@ public abstract class RaftImpl {
         // todo: synchronize
         raft.leader(leader);
 
-        if(data == null || length == 0) { // we got an empty AppendEntries message containing only leader_commit
+        if(data == null || length == 0) { // we got an empty AppendEntries message containing only leaderCommit
             handleCommitRequest(leader, leader_commit);
             return null;
         }
@@ -59,7 +59,7 @@ public abstract class RaftImpl {
         if(prev == null && prev_log_index > 0) // didn't find entry
             return new AppendResult(false, raft.lastAppended());
 
-        // if the term at prev_log_index != prev_term -> return false and the start index of the conflicting term
+        // if the term at prevLogIndex != prev_term -> return false and the start index of the conflicting term
         if(prev_log_index == 0 || prev.term() == prev_log_term) {
             LogEntry existing=raft.logImpl.get(curr_index);
             if(existing != null && existing.term() != entry_term) {

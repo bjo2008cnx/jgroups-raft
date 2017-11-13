@@ -8,16 +8,26 @@ import java.io.DataOutput;
 
 /**
  * @author Bela Ban
- * @since  0.1
+ * @since 0.1
  */
 public abstract class RaftHeader extends Header {
     protected int term;
 
-    public RaftHeader() {}
-    public RaftHeader(int term) {this.term=term;}
+    public RaftHeader() {
+    }
 
-    public int        term()      {return term;}
-    public RaftHeader term(int t) {term=t; return this;}
+    public RaftHeader(int term) {
+        this.term = term;
+    }
+
+    public int term() {
+        return term;
+    }
+
+    public RaftHeader term(int t) {
+        term = t;
+        return this;
+    }
 
 
     public int size() {
@@ -29,8 +39,10 @@ public abstract class RaftHeader extends Header {
     }
 
     public void readFrom(DataInput in) throws Exception {
-        term=Bits.readInt(in);
+        term = Bits.readInt(in);
     }
 
-    public String toString() {return getClass().getSimpleName() + ": term=" + term;}
+    public String toString() {
+        return getClass().getSimpleName() + ": term=" + term;
+    }
 }

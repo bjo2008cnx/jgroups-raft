@@ -757,8 +757,8 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
 
         if (hdr instanceof AppendEntriesRequest) {
             AppendEntriesRequest req = (AppendEntriesRequest) hdr;
-            AppendResult result = impl.handleAppendEntriesRequest(msg.getRawBuffer(), msg.getOffset(), msg.getLength(), msg.src(), req.prev_log_index, req
-                    .prev_log_term, req.entry_term, req.leader_commit, req.internal);
+            AppendResult result = impl.handleAppendEntriesRequest(msg.getRawBuffer(), msg.getOffset(), msg.getLength(), msg.src(), req.prevLogIndex, req
+                    .prevLogTerm, req.entryTerm, req.leaderCommit, req.internal);
             if (result != null) {
                 result.commitIndex(commit_index);
                 Message rsp = new Message(leader).putHeader(id, new AppendEntriesResponse(current_term, result));
@@ -911,7 +911,7 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
     }
 
     /**
-     * Tries to advance commit_index up to leader_commit, applying all uncommitted log entries to the state machine
+     * Tries to advance commit_index up to leaderCommit, applying all uncommitted log entries to the state machine
      *
      * @param leader_commit The commit index of the leader
      */
