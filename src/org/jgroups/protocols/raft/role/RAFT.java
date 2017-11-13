@@ -58,17 +58,6 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
     }
 
     /**
-     * raft 节点的Id
-     */
-    @Property(description = "The identifier of this node. Needs to be unique and an element of members. Must not be null", writable = false)
-    protected String raft_id;
-
-    /**
-     * Raft集群成员
-     */
-    protected final List<String> members = new ArrayList<>();
-
-    /**
      * 大多数成员的数量
      */
     @ManagedAttribute(description = "Majority needed to achieve consensus; computed from members)", writable = false)
@@ -122,8 +111,6 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
      */
     protected Future<?> resend_task;
 
-    protected StateMachine state_machine;
-
     /**
      * 状态机是否已加载
      */
@@ -152,6 +139,16 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
     protected TimeScheduler timer;
 
     /**
+     * raft 节点的Id
+     */
+    @Property(description = "The identifier of this node. Needs to be unique and an element of members. Must not be null", writable = false)
+    protected String raft_id;
+
+    /**
+     * Raft集群成员
+     */
+    protected final List<String> members = new ArrayList<>();
+    /**
      * The current leader (can be null if there is currently no leader)
      */
     protected volatile Address leader;
@@ -167,6 +164,8 @@ public class RAFT extends Protocol implements Runnable, Settable, DynamicMembers
 
     @ManagedAttribute(description = "Index of the highest committed log entry")
     protected int commit_index;
+
+    protected StateMachine state_machine;
 
     @ManagedAttribute(description = "Is a snapshot in progress")
     protected boolean snapshotting;
