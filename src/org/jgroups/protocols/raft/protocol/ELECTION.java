@@ -35,55 +35,63 @@ public class ELECTION extends Protocol {
     protected static final short ELECTION_ID = 520;
 
     // When moving to JGroups -> add to jg-magic-map.xml
-    protected static final short VOTE_REQ = 3000;
+    protected static final short voteReq = 3000;
     protected static final short VOTE_RSP = 3001;
     protected static final short HEARTBEAT_REQ = 3002;
 
     //初始化ClassConfigurator
     static {
         ClassConfigurator.addProtocol(ELECTION_ID, ELECTION.class);
-        ClassConfigurator.add(VOTE_REQ, VoteRequest.class);
+        ClassConfigurator.add(voteReq, VoteRequest.class);
         ClassConfigurator.add(VOTE_RSP, VoteResponse.class);
         ClassConfigurator.add(HEARTBEAT_REQ, HeartbeatRequest.class);
     }
 
+    //领导者发出心跳的间隔（以毫秒为单位）
     @Property(description = "Interval (in ms) at which a leader sends out heartbeats")
     protected long heartbeat_interval = 30;
 
+    //最小选举间隔（毫秒）
     @Property(description = "Min election interval (ms)")
     protected long election_min_interval = 150;
 
+    //最大选举间隔（毫秒）。 实际的选举间隔是在[election_min_interval..election_max_interval]范围中作为随机值计算的
     @Property(description = "Max election interval (ms). The actual election interval is computed as a random value in " + "range " +
             "[election_min_interval..election_max_interval]")
     protected long election_max_interval = 300;
 
     /**
+     * 此节点投票的候选人的地址
      * The address of the candidate this node voted for in the current term
      */
-    protected Address voted_for;
+    protected Address votedFor;
 
     /**
+     * 本期为我收集的投票（如果是候选人）
      * Votes collected for me in the current term (if candidate)
      */
     @ManagedAttribute(description = "Number of votes this candidate received in the current term")
-    protected int current_votes;
+    protected int currentVotes;
 
-    @ManagedAttribute(description = "No election will ever be started if true; this node will always be a follower. " + "Used only for testing and may get "
-            + "removed. Don't use !")
-    protected boolean no_elections;
+    /**
+     * 如果真的话，选举将不会开始; 这个节点将永远是一个追随者。 仅用于测试，可能会被删除。 不要使用
+     */
+    @ManagedAttribute(description = "No election will ever be started if true; this node will always be a follower. Used only for testing and may get " +
+            "removed" + ". Don't use !")
+    protected boolean noElections;
 
 
     /**
-     * Whether a heartbeat has been received before this election timeout kicked in. If false, the follower becomes
-     * candidate and starts a new election
+     * 在这次选举超时之前是否收到心跳，如果是false，那么跟随者将成为候选人并开始新的选举
+     * Whether a heartbeat has been received before this election timeout kicked in. If false, the follower becomes candidate and starts a new election
      */
-    protected volatile boolean heartbeat_received = true;
+    protected volatile boolean heartbeatReceived = true;
 
     protected RAFT raft; // direct ref instead of events
-    protected Address local_addr;
+    protected Address localAddr;
     protected TimeScheduler timer;
-    protected Future<?> election_task;
-    protected Future<?> heartbeat_task;
+    protected Future<?> electionTask; //选举任务
+    protected Future<?> heartbeatTask; //心跳任务
     protected Role role = Role.Follower;
 
     public long heartbeatInterval() {
@@ -114,11 +122,11 @@ public class ELECTION extends Protocol {
     }
 
     public boolean noElections() {
-        return no_elections;
+        return noElections;
     }
 
     public ELECTION noElections(boolean flag) {
-        no_elections = flag;
+        noElections = flag;
         return this;
     }
 
@@ -130,14 +138,19 @@ public class ELECTION extends Protocol {
 
     @ManagedAttribute(description = "Is the heartbeat task running")
     public synchronized boolean isHeartbeatTaskRunning() {
-        return heartbeat_task != null && !heartbeat_task.isDone();
+        return heartbeatTask != null && !heartbeatTask.isDone();
     }
 
     @ManagedAttribute(description = "Is the election ttimer running")
     public synchronized boolean isElectionTimerRunning() {
-        return election_task != null && !election_task.isDone();
+        return electionTask != null && !electionTask.isDone();
     }
 
+    /**
+     * 初始化
+     *
+     * @throws Exception
+     */
     public void init() throws Exception {
         super.init();
         if (election_min_interval >= election_max_interval)
@@ -146,7 +159,6 @@ public class ELECTION extends Protocol {
         timer = getTransport().getTimer();
         raft = findProtocol(RAFT.class);
     }
-
 
     public Object down(Event evt) {
         switch (evt.getType()) {
@@ -162,7 +174,7 @@ public class ELECTION extends Protocol {
                 stopElectionTimer();
                 break;
             case Event.SET_LOCAL_ADDRESS:
-                local_addr = (Address) evt.getArg();
+                localAddr = (Address) evt.getArg();
                 break;
         }
         return down_prot.down(evt);
@@ -218,7 +230,7 @@ public class ELECTION extends Protocol {
 
 
     protected synchronized void handleHeartbeat(int term, Address leader) {
-        if (Objects.equals(local_addr, leader)) return;
+        if (Objects.equals(localAddr, leader)) return;
         heartbeatReceived(true);
         if (role != Role.Follower || raft.updateTermAndLeader(term, leader)) {
             changeRole(Role.Follower);
@@ -226,28 +238,28 @@ public class ELECTION extends Protocol {
         }
     }
 
-    protected void handleVoteRequest(Address sender, int term, int last_log_term, int last_log_index) {
-        if (Objects.equals(local_addr, sender)) return;
+    protected void handleVoteRequest(Address sender, int term, int lastLogTerm, int lastLogIndex) {
+        if (Objects.equals(localAddr, sender)) return;
         if (log.isTraceEnabled())
-            log.trace("%s: received VoteRequest from %s: term=%d, my term=%d, last_log_term=%d, last_log_index=%d", local_addr, sender, term, raft
-                    .currentTerm(), last_log_term, last_log_index);
-        boolean send_vote_rsp = false;
+            log.trace("%s: received VoteRequest from %s: term=%d, my term=%d, lastLogTerm=%d, lastLogIndex=%d", localAddr, sender, term, raft
+                    .currentTerm(), lastLogTerm, lastLogIndex);
+        boolean sendVoteRsp = false;
         synchronized (this) {
             if (voteFor(sender)) {
-                if (sameOrNewer(last_log_term, last_log_index)) send_vote_rsp = true;
+                if (sameOrNewer(lastLogTerm, lastLogIndex)) sendVoteRsp = true;
                 else {
-                    log.trace("%s: dropped VoteRequest from %s as my log is more up-to-date", local_addr, sender);
+                    log.trace("%s: dropped VoteRequest from %s as my log is more up-to-date", localAddr, sender);
                 }
-            } else log.trace("%s: already voted for %s in term %d; skipping vote", local_addr, sender, term);
+            } else log.trace("%s: already voted for %s in term %d; skipping vote", localAddr, sender, term);
         }
-        if (send_vote_rsp) sendVoteResponse(sender, term); // raft.current_term);
+        if (sendVoteRsp) sendVoteResponse(sender, term); // raft.current_term);
     }
 
     protected synchronized void handleVoteResponse(int term) {
         if (role == Role.Candidate && term == raft.currentTerm()) {
-            if (++current_votes >= raft.majority()) {
+            if (++currentVotes >= raft.majority()) {
                 // we've got the majority: become leader
-                log.trace("%s: collected %d votes (majority=%d) in term %d -> becoming leader", local_addr, current_votes, raft.majority(), term);
+                log.trace("%s: collected %d votes (majority=%d) in term %d -> becoming leader", localAddr, currentVotes, raft.majority(), term);
                 changeRole(Role.Leader);
             }
         }
@@ -257,7 +269,7 @@ public class ELECTION extends Protocol {
      * 处理选举超时
      */
     protected synchronized void handleElectionTimeout() {
-        log.trace("%s: election timeout", local_addr);
+        log.trace("%s: election timeout", localAddr);
         switch (role) {
             case Follower:
                 changeRole(Role.Candidate);
@@ -270,24 +282,24 @@ public class ELECTION extends Protocol {
     }
 
     /**
-     * Returns true if last_log_term >= my own last log term, or last_log_index >= my own index
+     * Returns true if lastLogTerm >= my own last log term, or lastLogIndex >= my own index
      *
-     * @param last_log_term
-     * @param last_log_index
+     * @param lastLogTerm
+     * @param lastLogIndex
      * @return
      */
-    protected boolean sameOrNewer(int last_log_term, int last_log_index) {
-        int my_last_log_index;
-        LogEntry entry = raft.log().get(my_last_log_index = raft.log().lastAppended());
-        int my_last_log_term = entry != null ? entry.term() : 0;
-        int comp = Integer.compare(my_last_log_term, last_log_term);
-        return comp <= 0 && (comp < 0 || Integer.compare(my_last_log_index, last_log_index) <= 0);
+    protected boolean sameOrNewer(int lastLogTerm, int lastLogIndex) {
+        int myLastLogIndex = raft.log().lastAppended();
+        LogEntry entry = raft.log().get(myLastLogIndex);
+        int myLastLogTerm = entry != null ? entry.term() : 0;
+        int comp = Integer.compare(myLastLogTerm, lastLogTerm);
+        return comp <= 0 && (comp < 0 || Integer.compare(myLastLogIndex, lastLogIndex) <= 0);
     }
 
 
     protected synchronized boolean heartbeatReceived(final boolean flag) {
-        boolean retval = heartbeat_received;
-        heartbeat_received = flag;
+        boolean retval = heartbeatReceived;
+        heartbeatReceived = flag;
         return retval;
     }
 
@@ -298,19 +310,19 @@ public class ELECTION extends Protocol {
     }
 
     protected void sendVoteRequest(int term) {
-        int last_log_index = raft.log().lastAppended();
-        LogEntry entry = raft.log().get(last_log_index);
-        int last_log_term = entry != null ? entry.term() : 0;
-        VoteRequest req = new VoteRequest(term, last_log_term, last_log_index);
-        log.trace("%s: sending %s", local_addr, req);
-        Message vote_req = new Message(null).putHeader(id, req).setFlag(Message.Flag.OOB, Message.Flag.INTERNAL, Message.Flag.NO_RELIABILITY, Message.Flag
+        int lastLogIndex = raft.log().lastAppended();
+        LogEntry entry = raft.log().get(lastLogIndex);
+        int lastLogTerm = entry != null ? entry.term() : 0;
+        VoteRequest req = new VoteRequest(term, lastLogTerm, lastLogIndex);
+        log.trace("%s: sending %s", localAddr, req);
+        Message voteReq = new Message(null).putHeader(id, req).setFlag(Message.Flag.OOB, Message.Flag.INTERNAL, Message.Flag.NO_RELIABILITY, Message.Flag
                 .NO_FC).setTransientFlag(Message.TransientFlag.DONT_LOOPBACK);
-        down_prot.down(new Event(Event.MSG, vote_req));
+        down_prot.down(new Event(Event.MSG, voteReq));
     }
 
     protected void sendVoteResponse(Address dest, int term) {
         VoteResponse rsp = new VoteResponse(term, true);
-        log.trace("%s: sending %s", local_addr, rsp);
+        log.trace("%s: sending %s", localAddr, rsp);
         Message vote_rsp = new Message(dest).putHeader(id, rsp).setFlag(Message.Flag.OOB, Message.Flag.INTERNAL, Message.Flag.NO_RELIABILITY, Message.Flag
                 .NO_FC);
         down_prot.down(new Event(Event.MSG, vote_rsp));
@@ -319,7 +331,7 @@ public class ELECTION extends Protocol {
     protected void changeRole(Role new_role) {
         if (role == new_role) return;
         if (role != Role.Leader && new_role == Role.Leader) {
-            raft.leader(local_addr);
+            raft.leader(localAddr);
             // send a first heartbeat immediately after the election so other candidates step down
             sendHeartbeat(raft.currentTerm(), raft.leader());
             stopElectionTimer();
@@ -339,10 +351,10 @@ public class ELECTION extends Protocol {
         synchronized (this) {
             new_term = raft.createNewTerm();
             voteFor(null);
-            current_votes = 0;
+            currentVotes = 0;
             // Vote for self - return if I already voted for someone else
-            if (!voteFor(local_addr)) return;
-            current_votes++; // vote for myself
+            if (!voteFor(localAddr)) return;
+            currentVotes++; // vote for myself
         }
 
         sendVoteRequest(new_term); // Send VoteRequest message; responses are received asynchronously. If majority -> become leader
@@ -350,39 +362,39 @@ public class ELECTION extends Protocol {
 
     @ManagedAttribute(description = "Vote cast for a candidate in the current term")
     public synchronized String votedFor() {
-        return voted_for != null ? voted_for.toString() : null;
+        return votedFor != null ? votedFor.toString() : null;
     }
 
     protected boolean voteFor(final Address addr) {
         if (addr == null) {
-            voted_for = null;
+            votedFor = null;
             return true;
         }
-        if (voted_for == null) {
-            voted_for = addr;
+        if (votedFor == null) {
+            votedFor = addr;
             return true;
         }
-        return voted_for.equals(addr); // a vote for the same candidate in the same term is ok
+        return votedFor.equals(addr); // a vote for the same candidate in the same term is ok
     }
 
 
     protected void startElectionTimer() {
-        if (!no_elections && (election_task == null || election_task.isDone())) {
-            election_task = timer.scheduleWithDynamicInterval(new ElectionTask());
+        if (!noElections && (electionTask == null || electionTask.isDone())) {
+            electionTask = timer.scheduleWithDynamicInterval(new ElectionTask());
         }
     }
 
     protected void stopElectionTimer() {
-        if (election_task != null) election_task.cancel(true);
+        if (electionTask != null) electionTask.cancel(true);
     }
 
     protected void startHeartbeatTimer() {
-        if (heartbeat_task == null || heartbeat_task.isDone())
-            heartbeat_task = timer.scheduleAtFixedRate(new HeartbeatTask(), heartbeat_interval, heartbeat_interval, TimeUnit.MILLISECONDS);
+        if (heartbeatTask == null || heartbeatTask.isDone())
+            heartbeatTask = timer.scheduleAtFixedRate(new HeartbeatTask(), heartbeat_interval, heartbeat_interval, TimeUnit.MILLISECONDS);
     }
 
     protected void stopHeartbeatTimer() {
-        if (heartbeat_task != null) heartbeat_task.cancel(true);
+        if (heartbeatTask != null) heartbeatTask.cancel(true);
     }
 
     protected <T extends Protocol> T findProtocol(Class<T> clazz) {
