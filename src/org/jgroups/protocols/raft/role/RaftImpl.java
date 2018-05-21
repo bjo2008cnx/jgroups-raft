@@ -70,8 +70,7 @@ public abstract class RaftImpl {
             return new AppendResult(false, raft.lastAppended());
         }
         int currIndex = prevLogIndex + 1;
-        int prevTerm = prev.term();
-        if (prevLogIndex == 0 || prevTerm == prevLogTerm) {//前一term相同
+        if (prevLogIndex == 0 || prev.term() == prevLogTerm) {//前一term相同
             LogEntry existing = raft.logImpl.get(currIndex);
             if (existing != null && existing.term() != entryTerm) { //当前term不同
                 // 删除当前和所有后续的条目，并用收到的条目覆盖
@@ -83,7 +82,7 @@ public abstract class RaftImpl {
             return new AppendResult(true, currIndex).commitIndex(raft.commitIndex());
         }
         // 如果preTerm不同，找到冲突的地方
-        return new AppendResult(false, getFirstIndexOfConflictingTerm(prevLogIndex, prevTerm), prevTerm);
+        return new AppendResult(false, getFirstIndexOfConflictingTerm(prevLogIndex, prev.term()), prev.term());
     }
 
 
