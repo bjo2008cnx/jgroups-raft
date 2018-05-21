@@ -61,6 +61,14 @@
         <maven>3.0.4</maven>
     </prerequisites>
 
+    <properties>
+        <lombok.version>1.16.4</lombok.version>
+        <slf4j.version>1.7.7</slf4j.version>
+        <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+        <maven-war-plugin.version>2.6</maven-war-plugin.version>
+        <compile_classpath>/conf/raft.xml</compile_classpath>
+    </properties>
+
     <repositories>
         <repository>
             <id>jboss-public-repository-group</id>
@@ -94,11 +102,6 @@
             <artifactId>mapdb</artifactId>
             <version>1.0.6</version>
         </dependency>
-        <!--dependency>
-            <groupId>org.jetbrains.xodus</groupId>
-            <artifactId></artifactId>
-            <version></version>
-        </dependency-->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -121,7 +124,12 @@
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <version>6.8.7</version>
-            <!--scope>test</scope-->
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
     <build>
@@ -242,7 +250,7 @@
                                 <java classname="org.jgroups.util.XMLSchemaGenerator">
                                     <classpath>
                                         <pathelement path="${compile_classpath}"/>
-                                        <pathelement path="${plugin_classpath}"/>
+                                        <!--<pathelement path="${plugin_classpath}"/>-->
                                     </classpath>
                                     <arg line="-o ${project.build.directory}/schema"/>
                                 </java>

@@ -157,7 +157,7 @@ public class CounterServiceDemo {
     }
 
     private static void help() {
-        System.out.println("CounterServiceDemo [-props props] [-name name] " + "[-repl_timeout timeout] [-follower] [-allow_dirty_reads true|false]");
+        System.out.println("CounterServiceDemo [-props props] [-name name] " + "[-repl_timeout timeout] [-follower] [-allowDirtyReads true|false]");
     }
 
 

@@ -25,12 +25,12 @@ import java.util.concurrent.TimeUnit;
 public class CounterService implements StateMachine, RAFT.RoleChange {
     protected Channel ch;
     protected RaftHandle raft;
-    protected long repl_timeout = 20000; // timeout (ms) to wait for a majority to ack a write
+    protected long replTimeout = 20000; // timeout (ms) to wait for a majority to ack a write
 
     /**
      * If true, reads can return the local counter value directly. Else, reads have to go through the leader
      */
-    protected boolean allow_dirty_reads = true;
+    protected boolean allowDirtyReads = true;
 
     // keys: counter names, values: counter values
     protected final Map<String, Long> counters = new HashMap<>();
@@ -53,20 +53,20 @@ public class CounterService implements StateMachine, RAFT.RoleChange {
     }
 
     public long replTimeout() {
-        return repl_timeout;
+        return replTimeout;
     }
 
     public CounterService replTimeout(long timeout) {
-        this.repl_timeout = timeout;
+        this.replTimeout = timeout;
         return this;
     }
 
     public boolean allowDirtyReads() {
-        return allow_dirty_reads;
+        return allowDirtyReads;
     }
 
     public CounterService allowDirtyReads(boolean flag) {
-        allow_dirty_reads = flag;
+        allowDirtyReads = flag;
         return this;
     }
 
@@ -104,7 +104,7 @@ public class CounterService implements StateMachine, RAFT.RoleChange {
      * @return The counter implementation
      */
     public Counter getOrCreateCounter(String name, long initial_value) throws Exception {
-        Object existing_value = allow_dirty_reads ? _get(name) : invoke(Command.get, name, false);
+        Object existing_value = allowDirtyReads ? _get(name) : invoke(Command.get, name, false);
         if (existing_value != null) counters.put(name, (Long) existing_value);
         else {
             Object retval = invoke(Command.create, name, false, initial_value);
@@ -132,7 +132,7 @@ public class CounterService implements StateMachine, RAFT.RoleChange {
 
 
     public long get(String name) throws Exception {
-        Object retval = allow_dirty_reads ? _get(name) : invoke(Command.get, name, false);
+        Object retval = allowDirtyReads ? _get(name) : invoke(Command.get, name, false);
         return (long) retval;
     }
 
@@ -233,7 +233,6 @@ public class CounterService implements StateMachine, RAFT.RoleChange {
             StringBuilder sb = new StringBuilder().append(index).append(" (").append(entry.term()).append("): ");
             if (entry.command() == null) {
                 sb.append("<marker record>");
-                System.out.println(sb);
                 return;
             }
             if (entry.internal()) {
@@ -293,7 +292,7 @@ public class CounterService implements StateMachine, RAFT.RoleChange {
         }
 
         byte[] buf = out.buffer();
-        byte[] rsp = raft.set(buf, 0, out.position(), repl_timeout, TimeUnit.MILLISECONDS);
+        byte[] rsp = raft.set(buf, 0, out.position(), replTimeout, TimeUnit.MILLISECONDS);
         return ignoreReturnValue ? null : Util.objectFromByteBuffer(rsp);
     }
 
