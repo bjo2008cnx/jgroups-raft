@@ -94,7 +94,7 @@ public class CounterServiceDemo {
                         break;
                 }
             } catch (Throwable t) {
-                System.err.println(t.toString());
+                t.printStackTrace();
             }
         }
     }
