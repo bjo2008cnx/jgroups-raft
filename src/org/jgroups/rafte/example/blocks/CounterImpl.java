@@ -1,4 +1,4 @@
-package org.jgroups.raft.blocks;
+package org.jgroups.rafte.example.blocks;
 
 import org.jgroups.blocks.atomic.Counter;
 

@@ -1,4 +1,4 @@
-package org.jgroups.raft.client;
+package org.jgroups.rafte.example.client;
 
 import org.jgroups.protocols.raft.protocol.CLIENT;
 import org.jgroups.util.Util;

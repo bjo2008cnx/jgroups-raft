@@ -1,10 +1,10 @@
-package org.jgroups.raft.blocks;
+package org.jgroups.rafte.example.blocks;
 
 import org.jgroups.JChannel;
 import org.jgroups.protocols.raft.InternalCommand;
 import org.jgroups.protocols.raft.StateMachine;
 import org.jgroups.protocols.raft.role.RAFT;
-import org.jgroups.raft.RaftHandle;
+import org.jgroups.rafte.example.RaftHandle;
 import org.jgroups.util.Bits;
 import org.jgroups.util.ByteArrayDataInputStream;
 import org.jgroups.util.ByteArrayDataOutputStream;

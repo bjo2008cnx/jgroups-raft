@@ -1,9 +1,9 @@
-package org.jgroups.raft.demos;
+package org.jgroups.rafte.example.demos;
 
 import org.jgroups.JChannel;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
-import org.jgroups.raft.blocks.ReplicatedStateMachine;
+import org.jgroups.rafte.example.blocks.ReplicatedStateMachine;
 import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.raft.protocol.ELECTION;
 import org.jgroups.protocols.raft.role.RAFT;

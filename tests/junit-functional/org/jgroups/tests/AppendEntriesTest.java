@@ -11,7 +11,7 @@ import org.jgroups.JChannel;
  import org.jgroups.protocols.raft.log.LogEntry;
  import org.jgroups.protocols.raft.role.RAFT;
  import org.jgroups.protocols.raft.role.RaftImpl;
- import org.jgroups.raft.blocks.ReplicatedStateMachine;
+ import org.jgroups.rafte.example.blocks.ReplicatedStateMachine;
 import org.jgroups.util.Util;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;

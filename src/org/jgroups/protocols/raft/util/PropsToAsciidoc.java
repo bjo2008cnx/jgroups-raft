@@ -1,4 +1,4 @@
-package org.jgroups.raft.util;
+package org.jgroups.protocols.raft.util;
 
 import org.jgroups.annotations.Property;
 import org.jgroups.annotations.Unsupported;

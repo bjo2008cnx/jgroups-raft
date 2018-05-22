@@ -1,4 +1,4 @@
-package org.jgroups.raft;
+package org.jgroups.rafte.example;
 
 import org.jgroups.Address;
 import org.jgroups.Channel;

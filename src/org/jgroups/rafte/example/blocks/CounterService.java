@@ -1,4 +1,4 @@
-package org.jgroups.raft.blocks;
+package org.jgroups.rafte.example.blocks;
 
 import org.jgroups.Channel;
 import org.jgroups.blocks.atomic.Counter;
@@ -6,7 +6,7 @@ import org.jgroups.protocols.raft.InternalCommand;
 import org.jgroups.protocols.raft.StateMachine;
 import org.jgroups.protocols.raft.role.RAFT;
 import org.jgroups.protocols.raft.role.Role;
-import org.jgroups.raft.RaftHandle;
+import org.jgroups.rafte.example.RaftHandle;
 import org.jgroups.util.*;
 
 import java.io.DataInput;

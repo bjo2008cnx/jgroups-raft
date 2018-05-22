@@ -1,4 +1,4 @@
-package org.jgroups.raft.util;
+package org.jgroups.protocols.raft.util;
 
 /**
  * Created by ugol on 05/12/14.

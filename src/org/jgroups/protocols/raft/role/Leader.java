@@ -2,7 +2,7 @@ package org.jgroups.protocols.raft.role;
 
 import org.jgroups.Address;
 import org.jgroups.protocols.raft.message.AppendResult;
-import org.jgroups.raft.util.RequestTable;
+import org.jgroups.protocols.raft.util.RequestTable;
 import org.jgroups.util.ExtendedUUID;
 import org.jgroups.util.Util;
 

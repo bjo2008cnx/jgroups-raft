@@ -1,10 +1,10 @@
-package org.jgroups.raft.demox;
+package org.jgroups.rafte.example.demox;
 
 import org.jgroups.Channel;
 import org.jgroups.protocols.raft.StateMachine;
 import org.jgroups.protocols.raft.role.RAFT;
 import org.jgroups.protocols.raft.role.Role;
-import org.jgroups.raft.RaftHandle;
+import org.jgroups.rafte.example.RaftHandle;
 import org.jgroups.util.AsciiString;
 import org.jgroups.util.Bits;
 import org.jgroups.util.ByteArrayDataInputStream;

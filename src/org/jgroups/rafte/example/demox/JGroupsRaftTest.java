@@ -1,4 +1,4 @@
-package org.jgroups.raft.demox;
+package org.jgroups.rafte.example.demox;
 
 import org.jgroups.JChannel;
 import org.jgroups.protocols.raft.role.RAFT;

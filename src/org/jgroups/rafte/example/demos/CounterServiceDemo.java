@@ -1,4 +1,4 @@
-package org.jgroups.raft.demos;
+package org.jgroups.rafte.example.demos;
 
 import org.jgroups.JChannel;
 import org.jgroups.ReceiverAdapter;
@@ -6,7 +6,7 @@ import org.jgroups.View;
 import org.jgroups.blocks.atomic.Counter;
 import org.jgroups.protocols.raft.protocol.ELECTION;
 import org.jgroups.protocols.raft.role.RAFT;
-import org.jgroups.raft.blocks.CounterService;
+import org.jgroups.rafte.example.blocks.CounterService;
 import org.jgroups.util.Util;
 
 /**

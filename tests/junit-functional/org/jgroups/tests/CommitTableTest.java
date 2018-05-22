@@ -2,7 +2,7 @@ package org.jgroups.tests;
 
 import org.jgroups.Address;
 import org.jgroups.Global;
-import org.jgroups.raft.util.CommitTable;
+import org.jgroups.protocols.raft.util.CommitTable;
 import org.jgroups.util.Util;
 import org.testng.annotations.Test;
 
