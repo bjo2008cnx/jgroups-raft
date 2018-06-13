@@ -4,49 +4,34 @@
 
 === Cluster members and identity
 
-Each cluster member has an address (a UUID) assigned by JGroups and a `raft_id` which needs to be assigned by the user.
-The latter is a string (e.g. "A") which needs to be unique in the entire cluster. In other words, the `raft_id` is the
-_identity_ of a member for the sake of jgroups-raft.
+每个集群成员都有一个由JGroups分配的地址（一个UUID）和一个需要由用户分配的`raft_id`,raft_id是一个字符串（例如“A”），它在整个集群中需要是唯一的。 换句话说，`raft_id`是
+为jgroups-raft而成员的身份。
 
-A Raft cluster has a fixed size, so that a majority can be computed for leader election and appending of entries. The
-members allowed into the cluster is defined in `RAFT.members`, e.g.
+Raft集群具有固定的大小，因此可以为领导者选举以及条目追加。 允许进入群集的成员在`RAFT.members`中定义，例如，
 
 [source,xml]
 ----
 <raft.RAFT members="A,B,C" raft_id="${raft_id:undefined}"/>
 ----
 
-This defines a cluster of 3 members: "A", "B" and "C" (whose majority is 2).
+这定义了3个成员的集群：“A”，“B”和“C”（其大多数为2）。
 
-These are the `raft_id` attributes of the 3 members, so attribute `raft_id` in the example above needs to be one of them.
-If we don't start this member with the system property `-Draft_id=X` (where X needs to be "A", "B", or "C"),
-then the member will start up as "undefined" is not a member of `{"A", "B", "C"}`.
+这些是3个成员的`raft_id`属性，所以上例中的`raft_id`属性需要是其中的一个。
+如果我们不使用系统属性`-Draft_id = X`（其中X需要为“A”，“B”或“C”）启动此成员，那么该成员将启动为“未定义”: 不是“{”A“，”B“，”C“}`的成员。
 
-NOTE: Note that while `RAFT` ensures that non-members cannot join a cluster, the `NO_DUPES` protocol makes sure that
-no duplicate member can join. Example: if we have `RAFT.members="A,B,C"` and actual members "A" and "B" joined, then
-a join attempt by a member with duplicate name "B" will be rejected and that member won't be able to join.
+注：请注意，尽管`RAFT`确保非成员不能加入群集，`NO_DUPES`协议确保没有重复的成员可以加入。 例如：如果我们有`RAFT.members =“A，B，C”`和实际成员“A”和“B”加入，
+那么重复名称为“B”的成员的加入尝试将被拒绝，该成员无法加入集群。
+属性`raft_id`也被用来定义持久化日志的位置; 除非在“RAFT”中定义了`log_name`，否则该位置被计算为例如`<temp_dir> / <raft_id> .log`。`/ TMP / A.log`。
 
-Attribute `raft_id` is also used to define the location of the persistent log; unless `log_name` is defined in
-`RAFT`, the location is computed as `<temp_dir>/<raft_id>.log`, e.g. `/tmp/A.log`.
-
-Note that members can be added and removed dynamically (without taking the entire cluster down, changing the configuration
-and restarting it), see <<DynamicMembership>>.
-
-
-
+请注意，可以动态添加和删除成员（无需关闭整个群集，更改配置并重新启动它），请参阅<DynamicMembership>。
 
 === RaftHandle
 
-As shown in <<ArchitectureFig>>, `RaftHandle` is the main class users will be dealing with. It provides methods to change
-state (append entries) in the replicated state machines, and a state machine can be registered with it. The state machine
-will be initialized at startup and updated by jgroups-raft whenever there is a change.
-
-A successful change is committed to the persistent logs of all cluster members and applied to their state machines, so
-all state machines have exactly the same state.
-
+如“ArchitectureFig”所示，“RaftHandle”是用户将要处理的主要类。 它提供了更改复制状态机中状态（追加条目）的方法，并且可以向其注册状态机。 状态机将在启动时初始化，并在每次更改时由jgroups-raft更新。
+一个成功的更改将致力于所有集群成员的持久日志并应用于其状态机，因此所有状态机都具有完全相同的状态。
 
 ==== Creation
-An instance of RaftHandle is associated with exactly _one_ JGroups channel, and can be created as follows:
+RaftHandle的一个实例与_one_ JGroups通道关联，可以按如下方式创建：
 
 [source,java]
 ----
@@ -54,11 +39,9 @@ JChannel ch=new JChannel("/home/bela/raft.xml"); // <1>
 RaftHandle handle=new RaftHandle(ch, this);      // <2>
 ch.connect("raft-cluster");                      // <3>
 ----
-<1> A new JGroups channel is created (see the JGroups manual for details on the JGroups API)
-<2> A RaftHandle instance is created over the channel (which must be non-null). The second argument is an implementation
-    of `StateMachine`. If null, no changes will be applied. The state machine can be set with `stateMachine(StateMachine sm)`.
-<3> The channel is connected which causes the member to join the cluster
-
+<1>创建新的JGroups频道（有关JGroups API的详细信息，请参阅JGroups手册）
+<2>通过通道创建一个RaftHandle实例（它必须是非空的）。 第二个参数是`StateMachine`的一个实现。 如果为null，则不会更新变化的状态。 状态机可以用`stateMachine（StateMachine sm）`来设置。
+<3>通道已连接，成员加入群集
 
 ==== Making changes
 The `setX()` methods can be used to make changes:
