@@ -32,7 +32,6 @@ import java.util.function.ObjIntConsumer;
 /**
  * 实现RAFT 一致性协议
  * <a href="https://github.com/ongardie/dissertation">RAFT consensus protocol</a> <p/>
- * [1] https://github.com/ongardie/dissertation
  *
  * @author Bela Ban
  * @since 0.1

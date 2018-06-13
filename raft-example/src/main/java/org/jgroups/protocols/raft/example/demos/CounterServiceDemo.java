@@ -6,7 +6,7 @@ import org.jgroups.View;
 import org.jgroups.blocks.atomic.Counter;
 import org.jgroups.protocols.raft.protocol.ELECTION;
 import org.jgroups.protocols.raft.role.RAFT;
-import org.jgroups.protocols.raft.example.blocks.CounterService;
+import org.jgroups.protocols.raft.blocks.CounterService;
 import org.jgroups.util.Util;
 
 /**
@@ -121,7 +121,7 @@ public class CounterServiceDemo {
 
 
     public static void main(final String[] args) throws Exception {
-        String properties = "raft.xml";
+        String properties = "conf/raft.xml";
         String name = null;
         long repl_timeout = 5000;
         boolean allow_dirty_reads = true;
