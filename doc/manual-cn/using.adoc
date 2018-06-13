@@ -44,7 +44,7 @@ ch.connect("raft-cluster");                      // <3>
 <3>通道已连接，成员加入群集
 
 ==== Making changes
-The `setX()` methods can be used to make changes:
+`setX（）`方法可用于进行更改：
 
 [source,java]
 ----
@@ -52,31 +52,22 @@ byte[] set(byte[] buf, int offset, int length) throws Exception; // <1>
 byte[] set(byte[] buf, int offset, int length, long timeout, TimeUnit unit) throws Exception; // <2>
 CompletableFuture<byte[]> setAsync(byte[] buf, int offset, int length); // <3>
 ----
-<1> Synchronous change; the caller will be blocked until the change has been forwarded to the leader, which sends it to
-    all cluster members which apply it to their persistent logs and ack the change back to the leader. Once the leader
-    gets a majority of acks, it commits the change to its own log, applies it to its state machine and returns the
-    response to the caller. The state machines thus only contain _committed changes_.
-<2> Same as above, except that this call is bounded with a timeout. If it elapses before a majority of acks have been
-    received, a `TimeoutException` will be thrown.
-<3> Asynchronous change; this method returns immediately with a `CompletableFuture` which can be used to retrieve the
-    result later, or to provide some code that's executed as soon as the result is available (e.g. `whenComplete()`).
+<1>同步改变; 调用者将被阻塞，直到更改已转发给领导者，领导者将其发送给所有将其应用于其持久日志的集群成员，并将变更回复给领导者。
+ 一旦领导者获得大部分ack，它就会将更改提交给自己的日志，将其应用到其状态机并将响应返回给调用者。 状态机因此只包含_committed changes_。
+<2>和上面一样，只是这个调用有一个超时限制。 如果在收到大多数答案之前已经过去，则会抛出“TimeoutException”。
+<3>异步改变; 这个方法立即返回一个`CompletableFuture`，它可以用来稍后检索结果，或者提供一些结果可用时执行的代码（例如`whenComplete（）`）。
 
-The contents of the request and response buffers is application specific.
+请求和响应缓冲区的内容是特定于应用程序的。
 
-For example, if we implemented a replicated hash map, then a request could be a `put(key,value)`. The `put()`
-would have to be serialized into the buffer, as well as the key and the value.
+例如，如果我们实现了一个可复值的HashMap，那么请求可能是`put（key，value）`。 `put（）`必须被序列化到缓冲区中，包括键和值。
 
-When committing the change, every state machine needs to de-serialize the buffer into a `put(key,value)` and apply it to
-its state (see <<ImplementingStateMachine>>). If there is a return value to the `put()` call, e.g. the previous value
-associated with `key`, then it will be serialized into a buffer and returned as result of one of the `setX()` calls.
-
-
-
+当提交更改时，每个状态机需要将缓冲区反序列化为“put（key，value）”并将其应用于其状态（请参阅<< ImplementingStateMachine >>）。
+如果有`put（）`调用的返回值，例如 与`key`关联的前一个值，那么它将被序列化到一个缓冲区并作为`setX（）`调用的结果返回。
 
 [[ImplementingStateMachine]]
 ==== Implementing a StateMachine
 
-`StateMachine` is an interface and is defined as follows:
+`StateMachine`是一个接口，定义如下：
 
 [source,java]
 ----
@@ -86,49 +77,38 @@ public interface StateMachine {
     void   writeContentTo(DataOutput out) throws Exception;              // <3>
 }
 ----
-<1> This method is called whenever a log entry is _committed_. The buffer's contents are application specific (e.g this
-    could be a serialized `put(key,value)` as discussed above. If there is a return value of applying the change to the
-    state machine, it needs to be serialized so that it can be returned to the caller (e.g. a client).
-<2> This method is called when `RAFT` needs to initialize a state machine from a _snapshot_ (a dump of a state
-    machine's contents to an external stream (e.g. a file)). The `writeContentTo()` method below wrote the contents
-    to a file before, in an application specific format, and this method now needs to read the contents back into the
-    state machine.
-<3> This method is the opposite of `readContentFrom()` and writes the contents of this state machine to a stream
-    (e.g. a file).
+<1>只要日志条目是_committed_，就会调用此方法。 缓冲区的内容是特定于应用程序的（例如，如上所述，这可能是一个序列化的'put（key，value）'。
+如果有一个将更改应用于状态机的返回值，则需要对其进行序列化，以便它可以 返回给调用者（例如客户端）。
 
+<2>当'RAFT'需要从_snapshot_（状态机内容转储到外部流（例如文件））初始化状态机时调用此方法。
+下面的`writeContentTo（）`方法在应用程序特定的格式之前将内容写到文件中，并且此方法现在需要将内容读回到状态机中。
+
+<3>此方法与readContentFrom（）相反，并将此状态机的内容写入流（例如文件）。
 
 [[Snapshots]]
 ==== Snapshotting and state transfer
 
-All cluster members maintain a persistent log and append all changes as log entries to the end of the log. To prevent
-logs from growing indefinitely, a _snapshot_ of the state machine can be made and the log truncated. This is done
-(programatically) with method `snapshot()`, or declaratively (see below).
+所有集群成员都维护一个持久化日志，并将所有更改作为日志条目附加到日志末尾。 为防止日志无限增长，可以创建状态机的_snapshot_并截断日志。
+这是用编程方式调用``snapshot（）`方法来完成的，或者是声明式的（见下文）。
 
-This method calls `StateMachine.writeContentTo()` to dump the state of the state machine into a snapshot file and then
-truncates the log. New members who don't have a log yet are initialized by sending them the snapshot first. After that,
-they will catch up via the regular Raft mechanism.
+此方法调用`StateMachine.writeContentTo（）`将状态机的状态转储到快照文件中，然后截断日志。 尚未创建日志的新成员通过首先向其发送快照来进行初始化。
+之后，他们将通过常规的Raft机制迎头赶上。
 
-Logs can be snapshot automatically by setting `RAFT.max_log_size` to the max number of bytes that a log is allowed to
-grow to until a snapshot is taken.
-
+通过将“RAFT.max_log_size”设置为日志允许增长的最大字节数,当到达该值时，将自动创建快照。
 
 ==== Miscellaneous methods
 
 Other methods in `RaftHandle` include:
 
-leader():: Returns the address of the current Raft leader, or null if there is no leader (e.g. in case there was no
-           majority to elect a leader)
-isLeader():: Whether or not the current member is the leader
-addRoleListener(RAFT.RoleChange listener):: Allows to register a  `RoleChange` listener which is notified when the current
-             member changes its role (`Leader`, `Follower`, `Candidate`)
-currentTerm():: Returns the current term (see Raft for details)
-lastApplied():: Returns the index of the last log entry that was appended to the log
-commitIndex():: Returns the index of the last log entry that was committed
-raft():: Returns a reference to the `RAFT` protocol in the current member's stack. Provided for experts who need to
-         access `RAFT` directly.
+leader():: 返回当前Raft领导者的地址;如果没有领导者，则返回null（例如，如果没有选举领导者的多数票）
+isLeader():: 目前的成员是否是领导者
+addRoleListener(RAFT.RoleChange listener):: 允许注册一个'RoleChange`侦听器，当当前成员改变它的角色时（`Leader`，`Follower`，`Candidate`）,将会侦听
+currentTerm():: 返回当前term
+lastApplied():: 返回附加到日志的最后一个日志条目的索引
+commitIndex():: 返回提交的最后一个日志条目的索引
+raft()::返回当前成员堆栈中对“RAFT”协议的引用。 为需要直接访问“RAFT”的专家提供。
 
-raftId(String id):: Used to set the `raft_id` programmatically (note that this can also be done by setting `raft_id` in
-                    `RAFT` in the XML configuration. For example, the following code sets `raft_id` from the command line:
+raftId(String id):: 用于以编程方式设置`raft_id`（注意，这也可以通过在XML配置中在`RAFT`中设置`raft_id`来完成。例如，以下代码在命令行中设置`raft_id`：
 [source,java]
 ----
 protected void start(String raft_id) throws Exception {
@@ -141,18 +121,14 @@ public static void main(String[] args) throws Exception {
     new bla().start(args[0]);  // <1>
 }
 ----
-<1> The `raft_id` can for example be passed to the program as an argument
-<2> The channel is created and its logical name set to be the same as `raft_id`. This is not necessary, but convenient.
-<3> Now `raft_id` can be set via `RaftHandle.raftId(String id)`.
-
-
+<1>`raft_id`可以作为参数传递给程序
+<2>通道已创建，其逻辑名称与“raft_id”相同。 这不是必需的，但方便。
+<3>现在`raft_id`可以通过`RaftHandle.raftId（String id）`来设置。
 
 === Configuration
 
-The configuration of a member is either done declaratively via an XML config file or programmatically. Refer to the
-JGroups documentation for details.
-
-A sample XML configuration file is shown below (edited for brevity):
+成员的配置可以通过XML配置文件或编程方式声明式完成。 有关详细信息，请参阅JGroups文档。
+示例XML配置文件如下所示（为简洁起见进行了编辑）：
 
 [source,xml]
 ----
@@ -185,34 +161,26 @@ A sample XML configuration file is shown below (edited for brevity):
     <raft.CLIENT bind_addr="0.0.0.0" />                                      // <5>
 </config>
 ----
-<1> `NO_DUPES`: checks that joining a new member doesn't lead to duplicate `raft_ids` in the membership. Rejects the
-     JOIN if it would. Must be placed somewhere _below_ `GMS`
-<2> `ELECTION`: this protocol implements leader election, as defined in Raft. It is independent from `RAFT` and could
-     (and may, in the future) be replaced with a different election protocol. Attributes `election_min_interval` and
-     `election_max_interval` define the range from which jgroups-raft picks a random election timeout.
-<3> `RAFT`: the main protocol implementing log appending and committing, handling state machine updates, snapshotting etc.
-     Attribute `members` defines the (fixed) membership (may still be redfined by `addServer`/`removeServer` log entries
-     when initializing a member from the persistent log). Attribute `raft_id` defines the ID of the current member (needs
-     to be an element of `members`, as discussed earlier).
-<4> `REDIRECT` is used to redirect requests to the current Raft leader, or to throw an exception if no member is leader
-<5> `CLIENT` listens on a socket (port `1965` by default) for client requests, executes them and sends the result back
-     to the clients. Currently, `addServer` and `removeServer` has been implemented.
+<1> `NO_DUPES`：检查加入新成员不会导致成员资格中的'raft_ids`重复。 如果可以的话，拒绝JOIN。 必须放置在`GMS`下面的某个地方
+<2> `选举“：该协议实施领导选举。 它与“RAFT”相互独立，并且可能（并且可能在将来）被替换为不同的选举协议。
+     属性`election_min_interval`和`election_max_interval`定义jgroups-raft选择随机选举超时的范围。
 
-This is a regular JGroups XML configuration, except that jgroups-raft added a few additional protocols.
+<3> RAFT：主要协议，实现日志追加和提交，处理状态机更新，快照等。
+    属性`members`定义（固定）成员资格（当从持久性日志初始化成员时，可能仍由`addServer` /`removeServer`日志条目重新定义）。
+    属性`raft_id`定义当前成员的ID（如前所述，需要成为“成员”的一个要素）。
+<4> REDIRECT用于将请求重定向到当前的Raft领导者，或者在没有成员领导的情况下抛出异常
+<5> <CLIENT>侦听客户端请求的套接字（默认端口为“1965”），执行它们并将结果发回给client。 目前，已经实现了`addServer`和`removeServer`。
 
-
-
+这是一个常规的JGroups XML配置，除了jgroups-raft添加了一些其他协议。
 
 [[DynamicMembership]]
 === Adding and removing members dynamically
 
-The `RAFT` protocol provides methods `addServer(String raft_id)` and `removeServer(String raft_id)` to add and remove
-servers from the static membership (defined by `RAFT.members`). Only one server at a time can be added and removed, and
-adding or removing a server needs a majority ack to be committed.
+'RAFT'协议提供了addServer（String raft_id）和removeServer（String raft_id）方法来从静态成员（由RAFT.members定义）添加和删除服务器。
+一次只能添加和移除一台服务器，添加或移除服务器需要提交大部分确认。
 
-Both methods are exposed via JMX, so `jconsole` could be used. However, jgroups-raft also provides a script
-(`client.sh`) to do this in a more convenient way. The script uses `Client` to connect to a member's `CLIENT` protocol
-running at `localhost:1965` (can be changed). The request is then forwarded to the current leader.
+这两种方法都通过JMX公开，所以可以使用'jconsole'。 但是，jgroups-raft还提供了一个脚本（`client.sh`）以更方便的方式执行此操作。
+该脚本使用`Client`连接到集群成员的1965端口(可以更改）。 该请求然后被转发给当前领导。
 
 The steps to add a member are as follows (say we have `RAFT.members="A,B,C"` and want to add "D"):
 
