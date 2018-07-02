@@ -18,7 +18,40 @@ public class CounterServiceDemo {
     protected JChannel ch;
     protected CounterService counterService;
 
-    void start(String props, String name, long repl_timeout, boolean allow_dirty_reads, boolean follower) throws Exception {
+    public static void main(final String[] args) throws Exception {
+        String properties = "conf/raft.xml";
+        String name = null;
+        long repl_timeout = 5000;
+        boolean allow_dirty_reads = true;
+        boolean follower = false;
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-props")) {
+                properties = args[++i];
+                continue;
+            }
+            if (args[i].equals("-name")) {
+                name = args[++i];
+                continue;
+            }
+            if (args[i].equals("repl_timeout")) {
+                repl_timeout = Long.parseLong(args[++i]);
+                continue;
+            }
+            if (args[i].equals("-allow_dirty_reads")) {
+                allow_dirty_reads = Boolean.parseBoolean(args[++i]);
+                continue;
+            }
+            if (args[i].equals("-follower")) {
+                follower = true;
+                continue;
+            }
+            help();
+            return;
+        }
+        new CounterServiceDemo().start(properties, name, repl_timeout, allow_dirty_reads, follower);
+    }
+
+    private void start(String props, String name, long repl_timeout, boolean allow_dirty_reads, boolean follower) throws Exception {
         ch = new JChannel(props).name(name);
         counterService = new CounterService(ch).raftId(name).replTimeout(repl_timeout).allowDirtyReads(allow_dirty_reads);
         if (follower) {
@@ -119,46 +152,7 @@ public class CounterServiceDemo {
         if (election != null) election.noElections(true);
     }
 
-
-    public static void main(final String[] args) throws Exception {
-        String properties = "conf/raft.xml";
-        String name = null;
-        long repl_timeout = 5000;
-        boolean allow_dirty_reads = true;
-        boolean follower = false;
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-props")) {
-                properties = args[++i];
-                continue;
-            }
-            if (args[i].equals("-name")) {
-                name = args[++i];
-                continue;
-            }
-            if (args[i].equals("repl_timeout")) {
-                repl_timeout = Long.parseLong(args[++i]);
-                continue;
-            }
-            if (args[i].equals("-allow_dirty_reads")) {
-                allow_dirty_reads = Boolean.parseBoolean(args[++i]);
-                continue;
-            }
-            if (args[i].equals("-follower")) {
-                follower = true;
-                continue;
-            }
-            help();
-            return;
-        }
-
-//        name = "A";
-        new CounterServiceDemo().start(properties, name, repl_timeout, allow_dirty_reads, follower);
-
-    }
-
     private static void help() {
         System.out.println("CounterServiceDemo [-props props] [-name name] " + "[-repl_timeout timeout] [-follower] [-allowDirtyReads true|false]");
     }
-
-
 }
